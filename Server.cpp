@@ -1,29 +1,29 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-unsigned short int	Server::set_port_num(char *str)
+unsigned short int Server::set_port_num(char *str)
 {
 	int ret;
 	int str_index = 0;
-	while(str[str_index])
+	while (str[str_index])
 	{
 		if (!(str[str_index] >= '0' || str[str_index] <= '9'))
-			throw (std::out_of_range("ERROR:: Port Number is only number"));
+			throw(std::out_of_range("ERROR:: Port Number is only number"));
 		str_index++;
 	}
 	ret = atoi(str);
 	if (!(ret >= 1024 && ret <= 65535))
-		throw (std::logic_error("ERROR:: PORT number range is 1024~65535"));
+		throw(std::logic_error("ERROR:: PORT number range is 1024~65535"));
 	return ((unsigned short int)ret);
 }
 
-std::string	Server::set_password(char *str)
+std::string Server::set_password(char *str)
 {
 	int str_index = 0;
 	while (str[str_index])
 		str_index++;
 	if (str_index >= 9)
-		throw (std::logic_error("ERROR:: Password is under 9 digit"));
+		throw(std::logic_error("ERROR:: Password is under 9 digit"));
 	return (str);
 }
 
@@ -40,7 +40,7 @@ Server::~Server()
 	close(server_sock);
 }
 
-void	Server::run()
+void Server::run()
 {
 	set_server_sock();
 	set_server_addr();
@@ -52,16 +52,16 @@ void	Server::run()
 	execute();
 }
 
-void	Server::set_server_sock()
+void Server::set_server_sock()
 {
 	int option = 1;
 	server_sock = socket(PF_INET, SOCK_STREAM, 0);
 	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 	if (server_sock == -1)
-		throw (std::logic_error("ERROR :: socket() error"));
+		throw(std::logic_error("ERROR :: socket() error"));
 }
 
-void	Server::set_server_addr()
+void Server::set_server_addr()
 {
 	memset(&this->server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
@@ -69,39 +69,39 @@ void	Server::set_server_addr()
 	server_addr.sin_port = htons(this->port_num);
 }
 
-void	Server::set_server_bind()
+void Server::set_server_bind()
 {
-	if (bind(server_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) == -1)
-		throw (std::logic_error("ERROR:: bind() error"));
+	if (bind(server_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+		throw(std::logic_error("ERROR:: bind() error"));
 }
 
-void	Server::set_server_listen()
+void Server::set_server_listen()
 {
 	if (listen(server_sock, 15) == -1)
-		throw (std::logic_error("ERROR:: listen() error"));
+		throw(std::logic_error("ERROR:: listen() error"));
 }
 
-int	Server::get_server_sock()
+int Server::get_server_sock()
 {
 	return (this->server_sock);
 }
 
-int		Server::get_data(int fd)
+int Server::get_data(int fd)
 {
-	char	buf[2];
-	ssize_t	read_len;
-	int		ret = 0;
+	char buf[2];
+	ssize_t read_len;
+	int ret = 0;
 	while ((read_len = recv(fd, buf, 1, 0)) == 1)
 	{
 		ret++;
 		message[fd] += buf[0];
 		if (buf[0] == '\n')
-			break ;
+			break;
 	}
 	return (ret);
 }
 
-bool	Server::check_message_ends(int fd)
+bool Server::check_message_ends(int fd)
 {
 	if (message[fd].length() == 1 && message[fd][0] == '\n')
 		message[fd] = "";
@@ -110,45 +110,57 @@ bool	Server::check_message_ends(int fd)
 	return (false);
 }
 
-void	Server::do_command(int fd)
+void Server::do_command(int fd)
 {
 	std::istringstream ss(message[fd]);
 	std::string string_buffer;
 	std::vector<std::string> vec;
 	std::vector<std::string>::iterator iter;
+	// PASS 123
+	// pass 123
+	// NICK sungho
+	// PASS 123 NICK sungho
+	// /connect 1234 sungho sungho
+	// /connect PASS 1234 NICK sugnho USER sungho //irssi 가 이렇게 넣는가?
+	// /joinc =>  irssi 어케 됨??
+	// joinc => nc 어케 됨??
+	void (Server::*f[3])(void) = {&Server::pass, &Server::user, &Server::nick};
+	std::string commands[3] = {"PASS", "USER", "NICK"};
+	// PASS는 server객체의 password와 비교해서 맞는 지 확인
+	// USER는 client객체의 username에 넣기
+	// NICK은 client객체의 nickname에 넣기
 	while (getline(ss, string_buffer, ' '))
 		vec.push_back(string_buffer);
-	iter = vec.end();
-	while (1)
+	iter = vec.begin();
+	while (iter != vec.end())
 	{
-		std::cout << *iter << "\n";
-		iter--;
-		if (iter == vec.begin())
+		for (int i = 0; i < 3; i++)
 		{
-			break ;
+			if (*iter == commands[i])
+			{
+				(this->*f[i])();
+			}
 		}
+		iter++;
 	}
-	// 1. space split
-	// 2. 뒤에서 부터 PASS체크
 }
 
-void	Server::add_client(int fd)
+void Server::add_client(int fd)
 {
 	Clients.insert(std::make_pair(fd, new Client()));
 }
 
-void	Server::execute()
+void Server::execute()
 {
 	while (1)
 	{
 		int ret_poll = poll(fds, fd_cnt, -1);
 		if (ret_poll > 0)
 		{
-			for(int i = 0; i < fd_cnt; i++)
+			for (int i = 0; i < fd_cnt; i++)
 			{
 				if (fds[i].revents == 0)
-					continue ;
-				// password, nick, user을 받아서 Irssi연결 되도록
+					continue;
 				if (fds[i].fd == server_sock)
 				{
 					client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addr_size);
@@ -174,7 +186,7 @@ void	Server::execute()
 						{
 							if (check_message_ends(fds[i].fd))
 							{
-								std::cout << "fd[" << fds[i].fd  << "]: " << message[fds[i].fd];
+								std::cout << "fd[" << fds[i].fd << "]: " << message[fds[i].fd];
 								do_command(fds[i].fd);
 								message[fds[i].fd] = "";
 							}
@@ -185,7 +197,7 @@ void	Server::execute()
 		}
 		else if (ret_poll < 0)
 		{
-			throw (std::logic_error("ERROR:: poll() errror"));
+			throw(std::logic_error("ERROR:: poll() errror"));
 		}
 	}
 }

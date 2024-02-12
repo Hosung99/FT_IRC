@@ -3,15 +3,17 @@
 
 #include "Server.hpp"
 
-class Client{
-	private:
-		Client(const Client&);
-		Client&	operator=(const Client&);
-		std::string	nickname;
-		std::string	username;
-	public:
-		Client();
-		~Client();
+class Client
+{
+private:
+	Client(const Client &);
+	Client &operator=(const Client &);
+	std::string nickname;
+	std::string username;
+
+public:
+	Client();
+	~Client();
 };
 
 #endif
