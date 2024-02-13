@@ -147,7 +147,7 @@ void Server::do_command(int fd)
 
 void Server::add_client(int fd)
 {
-	Clients.insert(std::make_pair(fd, new Client()));
+	Clients.insert(std::make_pair(fd, new Client(fd)));
 }
 
 void Server::execute()
