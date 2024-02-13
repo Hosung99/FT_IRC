@@ -13,5 +13,11 @@
 #include <sstream>
 
 #define BUF_SIZE 1024
+// PASS
+#define ERR_NEEDMOREPARAMS "Not enough parameters"
+#define ERR_PASSWDMISMATCH "Password incorrect"
+
+// NICK
+#define ERR_NICKCOLLISION "Nickname collision KILL from"
 
 #endif
