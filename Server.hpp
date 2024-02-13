@@ -29,9 +29,6 @@ private:
 	void add_client(int);
 	bool check_message_ends(int);
 	void do_command(int);
-	void pass();
-	void user();
-	void nick();
 	std::string password;
 	unsigned short int port_num;
 	int server_sock;

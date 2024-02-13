@@ -116,19 +116,7 @@ void Server::do_command(int fd)
 	std::string string_buffer;
 	std::vector<std::string> vec;
 	std::vector<std::string>::iterator iter;
-	// PASS 123
-	// pass 123
-	// NICK sungho
-	// PASS 123 NICK sungho
-	// /connect 1234 sungho sungho
-	// /connect PASS 1234 NICK sugnho USER sungho //irssi 가 이렇게 넣는가?
-	// /joinc =>  irssi 어케 됨??
-	// joinc => nc 어케 됨??
-	void (Server::*f[3])(void) = {&Server::pass, &Server::user, &Server::nick};
 	std::string commands[3] = {"PASS", "USER", "NICK"};
-	// PASS는 server객체의 password와 비교해서 맞는 지 확인
-	// USER는 client객체의 username에 넣기
-	// NICK은 client객체의 nickname에 넣기
 	while (getline(ss, string_buffer, ' '))
 		vec.push_back(string_buffer);
 	iter = vec.begin();
@@ -138,10 +126,11 @@ void Server::do_command(int fd)
 		{
 			if (*iter == commands[i])
 			{
-				(this->*f[i])();
+				// (this->*f[i])(fd, iter);
 			}
 		}
-		iter++;
+		if (iter != vec.end())
+			iter++;
 	}
 }
 
