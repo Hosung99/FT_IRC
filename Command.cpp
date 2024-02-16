@@ -1,6 +1,6 @@
 #include "Command.hpp"
 
-Command::Command(Server &server) : server(&server) {}
+Command::Command(Server &server) : _server(server){}
 Command::~Command() {}
 
 static bool isspecial(char c)
@@ -10,13 +10,14 @@ static bool isspecial(char c)
 	return (false);
 }
 
-void Command::run(int fd, std::map<int, Client *> Clients, std::string password, std::string command_string)
+void Command::run(int fd)
 {
-	std::istringstream iss(command_string);
+	std::istringstream iss(_server.get_message(fd));
 	std::string buffer;
 	std::map<int, Client *>::iterator iter;
 	std::vector<std::string> command_vec;
-	iter = Clients.find(fd);
+	std::map<int, Client *> clients = _server.get_clients();
+	iter = clients.find(fd);
 	while (getline(iss, buffer, ' '))
 	{
 		command_vec.push_back(buffer);
@@ -25,15 +26,15 @@ void Command::run(int fd, std::map<int, Client *> Clients, std::string password,
 	{
 		if (command_vec[0] == "PASS")
 		{
-			pass(fd, password, command_vec, Clients, iter);
+			pass(fd, command_vec);
 		}
 		else if (command_vec[0] == "NICK")
 		{
-			nick(fd, command_vec, Clients, iter);
+			nick(fd, command_vec);
 		}
 		else if (command_vec[0] == "USER")
 		{
-			user(fd, command_vec, Clients, iter);
+			user(command_vec, iter);
 		}
 		else
 		{
@@ -50,8 +51,11 @@ void Command::run(int fd, std::map<int, Client *> Clients, std::string password,
 	}
 }
 
-void Command::pass(int fd, std::string password, std::vector<std::string> command_vec, std::map<int, Client *> Clients, std::map<int, Client *>::iterator iter)
+void Command::pass(int fd, std::vector<std::string> command_vec)
 {
+	std::map<int, Client *> clients = _server.get_clients();
+	std::map<int, Client *>::iterator iter = clients.find(fd);
+	std::string password = _server.get_password();
 	if (command_vec.size() < 2) // rfc문서상으론 multple pass commands가 가능하다는데, 그게 PASS command가 여러개가 들어오는건지, PASS command에 여러개의 password가 들어오는건지 모르겠음
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " ");
@@ -73,21 +77,23 @@ void Command::pass(int fd, std::string password, std::vector<std::string> comman
 		iter->second->append_client_recv_buf(ERR_PASSWDMISMATCH);
 		iter->second->append_client_recv_buf("\r\n");
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
-		Clients.erase(fd);
+		clients.erase(fd);
 		close(fd);
 	}
 	iter->second->set_pass_regist(true);
 }
 
-void Command::nick(int fd, std::vector<std::string> command_vec, std::map<int, Client *> Clients, std::map<int, Client *>::iterator iter)
+void Command::nick(int fd, std::vector<std::string> command_vec)
 {
-	if (!iter->second->get_pass_regist())
+    std::map<int, Client *> clients = _server.get_clients();
+    std::map<int, Client *>::iterator iter = clients.find(fd);
+    if (!iter->second->get_pass_regist())
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
 		iter->second->append_client_recv_buf("\r\n");
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
-		Clients.erase(fd);
+		clients.erase(fd);
 		close(fd);
 		return;
 	}
@@ -106,7 +112,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec, std::map<int, C
 		iter->second->append_client_recv_buf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
 		return;
 	}
-	if (!check_nickname_duplicate(command_vec[1], Clients))
+	if (!check_nickname_duplicate(command_vec[1], _server.get_clients()))
 	{
 		iter->second->append_client_recv_buf(command_vec[1] + " :");
 		iter->second->append_client_recv_buf(ERR_NICKNAMEINUSE);
@@ -125,7 +131,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec, std::map<int, C
 	}
 }
 
-void Command::user(int fd, std::vector<std::string> command_vec, std::map<int, Client *> Clients, std::map<int, Client *>::iterator iter)
+void Command::user(std::vector<std::string> command_vec, std::map<int, Client *>::iterator iter)
 {
 	if (!iter->second->get_pass_regist())
 	{
