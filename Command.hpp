@@ -11,10 +11,11 @@ class Command
 private:
 	Command &operator=(const Command &);
 	Command(const Command &);
-	Server *server;
+	// Server *server;
 
 public:
-	Command(Server &server);
+	// Command(Server &server);
+	Command();
 	~Command();
 	void run(int, std::map<int, Client *>, std::string, std::string);
 	void pass(int, std::string, std::vector<std::string>, std::map<int, Client *>, std::map<int, Client *>::iterator);

@@ -12,18 +12,19 @@
 #include <vector>
 #include <utility>
 #include <sstream>
+#include <string.h>
 
 #define BUF_SIZE 1024
 // PASS
-#define ERR_NEEDMOREPARAMS "Not enough parameters"
-#define ERR_PASSWDMISMATCH "Password incorrect"
-#define ERR_ALREADYREGIST "You may not reregister"
+#define ERR_NEEDMOREPARAMS "Not enough parameters\r\n"
+#define ERR_PASSWDMISMATCH "Password incorrect\r\n"
+#define ERR_ALREADYREGIST "You may not reregister\r\n"
 
 // NICK
-#define ERR_NICKNAMEINUSE "Nickname is already in use"
-#define ERR_NICKCOLLISION "Nickname collision KILL from"
-#define ERR_NONICKNAMEGIVEN "No nickname given"
-#define ERR_ERRONEUSNICKNAME "Erroneus nickname"
+#define ERR_NICKNAMEINUSE "Nickname is already in use\r\n"
+#define ERR_NICKCOLLISION "Nickname collision KILL from\r\n"
+#define ERR_NONICKNAMEGIVEN "No nickname given\r\n"
+#define ERR_ERRONEUSNICKNAME "Erroneus nickname\r\n"
 
 // common
 #define ERR_NOTREGISTERED "You have not registered"
