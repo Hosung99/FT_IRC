@@ -164,8 +164,11 @@ void Server::execute()
 						str_len = recv_message(fds[i].fd);
 						if (str_len <= 0)
 						{
-							close(fds[i].fd);
 							std::cout << "fd " << fds[i].fd << " is quit connect" << std::endl;
+							Clients.find(i)->second->clear_client_recv_buf();
+							Clients.erase(i);
+							close(fds[i].fd);
+							delete Clients.find(i)->second;
 							fds[i].fd = -1;
 						}
 						else

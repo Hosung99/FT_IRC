@@ -27,6 +27,6 @@
 #define ERR_ERRONEUSNICKNAME "Erroneus nickname\r\n"
 
 // common
-#define ERR_NOTREGISTERED "You have not registered"
+#define ERR_NOTREGISTERED "You have not registered\r\n"
 
 #endif
