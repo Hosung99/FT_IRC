@@ -3,6 +3,10 @@
 Client::Client(int clientfd)
 {
 	this->client_fd = clientfd;
+	nickname = "Client";
+	is_regist_pass = false;
+	is_regist_nick = false;
+	is_regist_user = false;
 }
 
 Client::~Client()
@@ -71,4 +75,49 @@ std::string Client::get_client_send_buf()
 int Client::get_clientFd()
 {
 	return (this->client_fd);
+}
+
+bool Client::get_pass_regist()
+{
+	return (this->is_regist_pass);
+}
+
+bool Client::get_nick_regist()
+{
+	return (this->is_regist_nick);
+}
+
+bool Client::get_user_regist()
+{
+	return (this->is_regist_user);
+}
+
+void Client::set_pass_regist(bool is_regist_pass)
+{
+	this->is_regist_pass = is_regist_pass;
+}
+
+void Client::set_nick_regist(bool is_regist_nick)
+{
+	this->is_regist_nick = is_regist_nick;
+}
+
+void Client::set_user_regist(bool is_regist_user)
+{
+	this->is_regist_user = is_regist_user;
+}
+
+void Client::clear_client_recv_buf()
+{
+	this->client_recv_buf.clear();
+}
+
+void Client::clear_client_send_buf()
+{
+	this->client_send_buf.clear();
+}
+
+bool	Client::get_is_regist()
+{
+	return (is_regist_pass && is_regist_nick && is_regist_user);
 }

@@ -2,8 +2,10 @@
 #define SERVER_HPP
 
 #include "main.hpp"
+#include "Command.hpp"
 
 class Client;
+class Command;
 
 class Server
 {
@@ -11,11 +13,11 @@ public:
 	Server(char *, char *);
 	~Server();
 	void run();
-
 private:
 	Server();
 	Server(const Server &);
 	Server &operator=(const Server &);
+	Command *command;
 	std::map<int, Client *> Clients;
 	void execute();
 	void set_server_sock();
@@ -25,7 +27,7 @@ private:
 	unsigned short int set_port_num(char *);
 	std::string set_password(char *);
 	int get_server_sock();
-	int get_data(int);
+	int recv_message(int);
 	void add_client(int);
 	bool check_message_ends(int);
 	void do_command(int);
