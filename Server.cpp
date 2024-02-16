@@ -1,7 +1,7 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-unsigned short int Server::set_port_num(char *str)
+unsigned short int Server::setPortNum(char *str)
 {
 	int ret;
 	int str_index = 0;
@@ -17,7 +17,7 @@ unsigned short int Server::set_port_num(char *str)
 	return ((unsigned short int)ret);
 }
 
-std::string Server::set_password(char *str)
+std::string Server::setPassword(char *str)
 {
 	int str_index = 0;
 	while (str[str_index])
@@ -27,82 +27,82 @@ std::string Server::set_password(char *str)
 	return (str);
 }
 
-Server::Server(char *port_num, char *password)
+Server::Server(char *portNum, char *password)
 {
-	this->port_num = set_port_num(port_num);
-	this->password = set_password(password);
-	fd_cnt = 1;
-	client_addr_size = sizeof(this->client_addr);
-	this->command = new Command(*this);
+	this->_portNum = setPortNum(portNum);
+	this->_password = setPassword(password);
+	_fdCnt = 1;
+	_clientAddrSize = sizeof(this->_clientAddr);
+	this->_command = new Command(*this);
 }
 
 Server::~Server()
 {
-	close(server_sock);
+	close(_serverSock);
 }
 
 void Server::run()
 {
-	set_server_sock();
-	set_server_addr();
-	set_server_bind();
-	set_server_listen();
-	memset(fds, 0, sizeof(fds));
-	fds[0].fd = server_sock;
-	fds[0].events = POLLIN;
+	setServerSock();
+	setServerAddr();
+	setServerBind();
+	setServerListen();
+	memset(_fds, 0, sizeof(_fds));
+	_fds[0].fd = _serverSock;
+	_fds[0].events = POLLIN;
 	execute();
 }
 
-void Server::set_server_sock()
+void Server::setServerSock()
 {
 	int option = 1;
-	server_sock = socket(PF_INET, SOCK_STREAM, 0);
-	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
-	if (server_sock == -1)
+	_serverSock = socket(PF_INET, SOCK_STREAM, 0);
+	setsockopt(_serverSock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+	if (_serverSock == -1)
 		throw(std::logic_error("ERROR :: socket() error"));
 }
 
-void Server::set_server_addr()
+void Server::setServerAddr()
 {
-	memset(&this->server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(this->port_num);
+	memset(&this->_serverAddr, 0, sizeof(_serverAddr));
+	_serverAddr.sin_family = AF_INET;
+	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_port = htons(this->_portNum);
 }
 
-void Server::set_server_bind()
+void Server::setServerBind()
 {
-	if (bind(server_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+	if (bind(_serverSock, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) == -1)
 		throw(std::logic_error("ERROR:: bind() error"));
 }
 
-void Server::set_server_listen()
+void Server::setServerListen()
 {
-	if (listen(server_sock, 15) == -1)
+	if (listen(_serverSock, 15) == -1)
 		throw std::logic_error("ERROR:: listen() error");
 }
 
-int Server::get_server_sock()
+int Server::getServerSock()
 {
-	return (this->server_sock);
+	return (this->_serverSock);
 }
 
-std::map<int, Client *> Server::get_clients()
+std::map<int, Client *> Server::getClients()
 {
-	return (this->Clients);
+	return (this->_clients);
 }
 
-std::string Server::get_password()
+std::string Server::getPassword()
 {
-	return (this->password);
+	return (this->_password);
 }
 
-std::string Server::get_message(int fd)
+std::string Server::getMessage(int fd)
 {
-	return (this->message[fd]);
+	return (this->_message[fd]);
 }
 
-int Server::recv_message(int fd)
+int Server::recvMessage(int fd)
 {
 	char buf[2];
 	ssize_t read_len;
@@ -110,81 +110,81 @@ int Server::recv_message(int fd)
 	while ((read_len = recv(fd, buf, 1, 0)) == 1)
 	{
 		ret++;
-		message[fd] += buf[0];
+		_message[fd] += buf[0];
 		if (buf[0] == '\n')
 			break;
 	}
 	return (ret);
 }
 
-bool Server::check_message_ends(int fd)
+bool Server::checkMessageEnds(int fd)
 {
-	if (message[fd].length() == 1 && message[fd][0] == '\n')
-		message[fd] = "";
-	if (message[fd][message[fd].length() - 1] == '\n' && message[fd][message[fd].length() - 2] == '\r')
+	if (_message[fd].length() == 1 && _message[fd][0] == '\n')
+		_message[fd] = "";
+	if (_message[fd][_message[fd].length() - 1] == '\n' && _message[fd][_message[fd].length() - 2] == '\r')
 		return (true);
 	return (false);
 }
 
-void Server::do_command(int fd)
+void Server::doCommand(int fd)
 {
-	command->run(fd);
+	_command->run(fd);
 }
 
-void Server::add_client(int fd)
+void Server::addClient(int fd)
 {
-	Clients.insert(std::make_pair(fd, new Client(fd)));
+	_clients.insert(std::make_pair(fd, new Client(fd)));
 }
 
 void Server::execute()
 {
 	while (1)
 	{
-		int ret_poll = poll(fds, fd_cnt, -1);
+		int ret_poll = poll(_fds, _fdCnt, -1);
 		if (ret_poll > 0)
 		{
-			for (int i = 0; i < fd_cnt; i++)
+			for (int i = 0; i < _fdCnt; i++)
 			{
-				if (fds[i].revents == 0)
+				if (_fds[i].revents == 0)
 					continue;
-				if (fds[i].fd == server_sock)
+				if (_fds[i].fd == _serverSock)
 				{
-					client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addr_size);
-					fcntl(client_sock, F_SETFL, O_NONBLOCK);
-					fds[fd_cnt].fd = client_sock;
-					fds[fd_cnt].events = POLLIN;
-					fd_cnt++;
-					add_client(client_sock);
-					std::cout << "fd[" << client_sock << "] is connected" << std::endl;
+					_clientSock = accept(_serverSock, (struct sockaddr *)&_clientAddr, &_clientAddrSize);
+					fcntl(_clientSock, F_SETFL, O_NONBLOCK);
+					_fds[_fdCnt].fd = _clientSock;
+					_fds[_fdCnt].events = POLLIN;
+					_fdCnt++;
+					addClient(_clientSock);
+					std::cout << "fd[" << _clientSock << "] is connected" << std::endl;
 				}
 				else
 				{
-					if (fds[i].revents & POLLIN)
+					if (_fds[i].revents & POLLIN)
 					{
-						str_len = recv_message(fds[i].fd);
-						if (str_len <= 0)
+						_strLen = recvMessage(_fds[i].fd);
+						if (_strLen <= 0)
 						{
-							std::cout << "fd " << fds[i].fd << " is quit connect" << std::endl;
-							Clients.find(i)->second->clear_client_recv_buf();
-							Clients.erase(i);
-							close(fds[i].fd);
-							delete Clients.find(i)->second;
-							fds[i].fd = -1;
+							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
+							_clients.find(i)->second->clear_client_recv_buf();
+							_clients.erase(i);
+							close(_fds[i].fd);
+							delete _clients.find(i)->second;
+							_fds[i].fd = -1;
 						}
 						else
 						{
-							if (check_message_ends(fds[i].fd))
+							if (checkMessageEnds(_fds[i].fd))
 							{
-								std::cout << "fd[" << fds[i].fd << "]: " << message[fds[i].fd];
-								do_command(fds[i].fd);
-								message[fds[i].fd] = "";
+								std::cout << "fd[" << _fds[i].fd << "]: " << _message[_fds[i].fd];
+								doCommand(_fds[i].fd);
+								_message[_fds[i].fd] = "";
 							}
 						}
 					}
 				}
 			}
-			std::map<int, Client *>::iterator iter = Clients.begin();
-			for (; iter != Clients.end(); iter++)
+			std::map<int, Client *>::iterator iter = _clients.begin();
+			for (; iter != _clients.end(); iter++)
 			{
 				if (iter->second->get_client_recv_buf().length() > 0)
 				{

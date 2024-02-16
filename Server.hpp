@@ -9,42 +9,51 @@ class Command;
 
 class Server
 {
-public:
-	Server(char *, char *);
-	~Server();
-	void run();
-	std::map<int, Client *> get_clients();
-	std::string get_password();
-	std::string get_message(int);
-private:
-	Server();
-	Server(const Server &);
-	Server &operator=(const Server &);
-	Command *command;
-	std::map<int, Client *> Clients;
-	void execute();
-	void set_server_sock();
-	void set_server_addr();
-	void set_server_bind();
-	void set_server_listen();
-	unsigned short int set_port_num(char *);
-	std::string set_password(char *);
-	int get_server_sock();
-	int recv_message(int);
-	void add_client(int);
-	bool check_message_ends(int);
-	void do_command(int);
-	std::string password;
-	unsigned short int port_num;
-	int server_sock;
-	int client_sock;
-	struct sockaddr_in server_addr;
-	struct sockaddr_in client_addr;
-	socklen_t client_addr_size;
-	std::string message[BUF_SIZE];
-	int str_len;
-	int fd_cnt;
-	struct pollfd fds[256];
+	public:
+		/* OCCF */
+		Server(char *, char *);
+		~Server();
+
+		/* member functions */
+		void run(void);
+		std::map<int, Client *> getClients(void);
+		std::string getPassword(void);
+		std::string getMessage(int);
+
+	private:
+		/* OCCF */
+		Server();
+		Server(const Server &);
+		Server &operator=(const Server &);
+
+		/* member variables */
+		Command *_command;
+		std::map<int, Client *> _clients;
+		std::string _password;
+		unsigned short int _portNum;
+		int _serverSock;
+		int _clientSock;
+		struct sockaddr_in _serverAddr;
+		struct sockaddr_in _clientAddr;
+		socklen_t _clientAddrSize;
+		std::string _message[BUF_SIZE];
+		int _strLen;
+		int _fdCnt;
+		struct pollfd _fds[256];
+
+		/* member functions */
+		void execute();
+		void setServerSock();
+		void setServerAddr();
+		void setServerBind();
+		void setServerListen();
+		unsigned short int setPortNum(char *);
+		std::string setPassword(char *);
+		int getServerSock();
+		int recvMessage(int);
+		void addClient(int);
+		bool checkMessageEnds(int);
+		void doCommand(int);
 };
 
 #endif
