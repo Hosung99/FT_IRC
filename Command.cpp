@@ -1,6 +1,6 @@
 #include "Command.hpp"
 
-Command::Command(Server &server) : _server(server){}
+Command::Command(Server &server) : _server(server) {}
 Command::~Command() {}
 
 static bool isspecial(char c)
@@ -40,9 +40,9 @@ void Command::run(int fd)
 		{
 			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 			iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
-			iter->second->append_client_recv_buf("\r\n");
 			clients.erase(fd);
 			close(fd);
+			delete iter->second;
 		}
 	}
 	else
@@ -61,24 +61,23 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " ");
 		iter->second->append_client_recv_buf("PASS: ");
 		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
-		iter->second->append_client_recv_buf("\r\n");
 		return;
 	}
 	if (iter->second->get_pass_regist())
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_ALREADYREGIST);
-		iter->second->append_client_recv_buf("\r\n");
 		return;
 	}
-	if (password != command_vec[1])
+	if (strcmp(command_vec[1].substr(0, command_vec[1].length() - 2).c_str(), password.c_str()) != 0)
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_PASSWDMISMATCH);
-		iter->second->append_client_recv_buf("\r\n");
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
 		clients.erase(fd);
 		close(fd);
+		delete iter->second;
+		return;
 	}
 	iter->second->set_pass_regist(true);
 }
@@ -91,7 +90,6 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
-		iter->second->append_client_recv_buf("\r\n");
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
 		clients.erase(fd);
 		close(fd);
@@ -101,14 +99,12 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_NONICKNAMEGIVEN);
-		iter->second->append_client_recv_buf("\r\n");
 		return;
 	}
 	if (!check_nickname_validate(command_vec[1]))
 	{
 		iter->second->append_client_recv_buf(command_vec[1] + " :");
 		iter->second->append_client_recv_buf(ERR_ERRONEUSNICKNAME);
-		iter->second->append_client_recv_buf("\r\n");
 		iter->second->append_client_recv_buf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
 		return;
 	}
@@ -116,7 +112,6 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	{
 		iter->second->append_client_recv_buf(command_vec[1] + " :");
 		iter->second->append_client_recv_buf(ERR_NICKNAMEINUSE);
-		iter->second->append_client_recv_buf("\r\n");
 		return;
 	}
 	if (!iter->second->get_nick_regist())
@@ -143,13 +138,13 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
 		clients.erase(fd);
 		close(fd);
+		delete iter->second;
 		return;
 	}
 	if (command_vec.size() < 5 || !check_realname(command_vec[4]))
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " USER :");
 		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
-		iter->second->append_client_recv_buf("\r\n");
 		iter->second->append_client_recv_buf("/USER <username> <hostname> <servername> <:realname>\r\n");
 		return;
 	}
@@ -157,7 +152,6 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_ALREADYREGIST);
-		iter->second->append_client_recv_buf("\r\n");
 		return;
 	}
 	iter->second->set_user(command_vec[1], command_vec[2], command_vec[3], command_vec[4]);
