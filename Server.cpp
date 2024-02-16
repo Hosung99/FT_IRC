@@ -78,7 +78,7 @@ void Server::set_server_bind()
 void Server::set_server_listen()
 {
 	if (listen(server_sock, 15) == -1)
-		throw(std::logic_error("ERROR:: listen() error"));
+		throw std::logic_error("ERROR:: listen() error");
 }
 
 int Server::get_server_sock()
@@ -86,7 +86,7 @@ int Server::get_server_sock()
 	return (this->server_sock);
 }
 
-int Server::get_data(int fd)
+int Server::recv_message(int fd)
 {
 	char buf[2];
 	ssize_t read_len;
@@ -105,33 +105,14 @@ bool Server::check_message_ends(int fd)
 {
 	if (message[fd].length() == 1 && message[fd][0] == '\n')
 		message[fd] = "";
-	if (message[fd][message[fd].length() - 1] == '\n')
+	if (message[fd][message[fd].length() - 1] == '\n' && message[fd][message[fd].length() - 2] == '\r')
 		return (true);
 	return (false);
 }
 
 void Server::do_command(int fd)
 {
-	std::istringstream ss(message[fd]);
-	std::string string_buffer;
-	std::vector<std::string> vec;
-	std::vector<std::string>::iterator iter;
-	std::string commands[3] = {"PASS", "USER", "NICK"};
-	while (getline(ss, string_buffer, ' '))
-		vec.push_back(string_buffer);
-	iter = vec.begin();
-	while (iter != vec.end())
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			if (*iter == commands[i])
-			{
-				// (this->*f[i])(fd, iter);
-			}
-		}
-		if (iter != vec.end())
-			iter++;
-	}
+	command->run(fd, Clients, password, message[fd]);
 }
 
 void Server::add_client(int fd)
@@ -164,7 +145,7 @@ void Server::execute()
 				{
 					if (fds[i].revents & POLLIN)
 					{
-						str_len = get_data(fds[i].fd);
+						str_len = recv_message(fds[i].fd);
 						if (str_len <= 0)
 						{
 							close(fds[i].fd);
@@ -181,6 +162,15 @@ void Server::execute()
 							}
 						}
 					}
+				}
+			}
+			std::map<int, Client *>::iterator iter = Clients.begin();
+			for (; iter != Clients.end(); iter++)
+			{
+				if (iter->second->get_client_recv_buf().length() > 0)
+				{
+					send(iter->first, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
+					iter->second->clear_client_recv_buf();
 				}
 			}
 		}
