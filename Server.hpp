@@ -13,6 +13,9 @@ public:
 	Server(char *, char *);
 	~Server();
 	void run();
+	std::map<int, Client *> get_clients();
+	std::string get_password();
+	std::string get_message(int);
 private:
 	Server();
 	Server(const Server &);

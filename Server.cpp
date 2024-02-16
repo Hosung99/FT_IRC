@@ -33,6 +33,7 @@ Server::Server(char *port_num, char *password)
 	this->password = set_password(password);
 	fd_cnt = 1;
 	client_addr_size = sizeof(this->client_addr);
+	this->command = new Command(*this);
 }
 
 Server::~Server()
@@ -86,6 +87,21 @@ int Server::get_server_sock()
 	return (this->server_sock);
 }
 
+std::map<int, Client *> Server::get_clients()
+{
+	return (this->Clients);
+}
+
+std::string Server::get_password()
+{
+	return (this->password);
+}
+
+std::string Server::get_message(int fd)
+{
+	return (this->message[fd]);
+}
+
 int Server::recv_message(int fd)
 {
 	char buf[2];
@@ -112,7 +128,7 @@ bool Server::check_message_ends(int fd)
 
 void Server::do_command(int fd)
 {
-	command->run(fd, Clients, password, message[fd]);
+	command->run(fd);
 }
 
 void Server::add_client(int fd)
