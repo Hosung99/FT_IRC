@@ -27,6 +27,8 @@ public:
 	void pass(int, std::vector<std::string> command_vec);
 	void nick(int, std::vector<std::string> command_vec);
 	void user(int, std::vector<std::string> command_vec);
+	void ping(int, std::vector<std::string> command_vec);
+	void pong(int, std::vector<std::string> command_vec);
 	bool checkNicknameDuplicate(std::string, std::map<int, Client *>);
 	bool checkNicknameValidate(std::string);
 	bool checkRealname(std::string);
