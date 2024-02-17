@@ -12,11 +12,11 @@ static bool isspecial(char c)
 
 void Command::run(int fd)
 {
-	std::istringstream iss(_server.get_message(fd));
+	std::istringstream iss(_server.getMessage(fd));
 	std::string buffer;
 	std::map<int, Client *>::iterator iter;
 	std::vector<std::string> command_vec;
-	std::map<int, Client *> clients = _server.get_clients();
+	std::map<int, Client *> clients = _server.getClients();
 	iter = clients.find(fd);
 	while (getline(iss, buffer, ' '))
 	{
@@ -53,9 +53,9 @@ void Command::run(int fd)
 
 void Command::pass(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.get_clients();
+	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
-	std::string password = _server.get_password();
+	std::string password = _server.getPassword();
 	if (command_vec.size() < 2) // rfc문서상으론 multple pass commands가 가능하다는데, 그게 PASS command가 여러개가 들어오는건지, PASS command에 여러개의 password가 들어오는건지 모르겠음
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " ");
@@ -84,7 +84,7 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 
 void Command::nick(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.get_clients();
+	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	if (!iter->second->get_pass_regist())
 	{
@@ -101,14 +101,14 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		iter->second->append_client_recv_buf(ERR_NONICKNAMEGIVEN);
 		return;
 	}
-	if (!check_nickname_validate(command_vec[1]))
+	if (!checkNicknameValidate(command_vec[1]))
 	{
 		iter->second->append_client_recv_buf(command_vec[1] + " :");
 		iter->second->append_client_recv_buf(ERR_ERRONEUSNICKNAME);
 		iter->second->append_client_recv_buf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
 		return;
 	}
-	if (!check_nickname_duplicate(command_vec[1], _server.get_clients()))
+	if (!checkNicknameDuplicate(command_vec[1], _server.getClients()))
 	{
 		iter->second->append_client_recv_buf(command_vec[1] + " :");
 		iter->second->append_client_recv_buf(ERR_NICKNAMEINUSE);
@@ -128,7 +128,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 
 void Command::user(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.get_clients();
+	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	if (!iter->second->get_pass_regist())
 	{
@@ -141,7 +141,7 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 		delete iter->second;
 		return;
 	}
-	if (command_vec.size() < 5 || !check_realname(command_vec[4]))
+	if (command_vec.size() < 5 || !checkRealname(command_vec[4]))
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " USER :");
 		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
@@ -158,7 +158,7 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	iter->second->set_user_regist(true);
 }
 
-bool Command::check_nickname_validate(std::string nickname)
+bool Command::checkNicknameValidate(std::string nickname)
 {
 	if (nickname.length() == 0 || nickname.length() > 9)
 		return (false);
@@ -172,7 +172,7 @@ bool Command::check_nickname_validate(std::string nickname)
 	return (true);
 }
 
-bool Command::check_nickname_duplicate(std::string nickname, std::map<int, Client *> Clients)
+bool Command::checkNicknameDuplicate(std::string nickname, std::map<int, Client *> Clients)
 {
 	std::map<int, Client *>::iterator iter = Clients.begin();
 	for (; iter != Clients.end(); iter++)
@@ -183,7 +183,7 @@ bool Command::check_nickname_duplicate(std::string nickname, std::map<int, Clien
 	return (true);
 }
 
-bool Command::check_realname(std::string realname)
+bool Command::checkRealname(std::string realname)
 {
 	if (realname.length() == 0)
 		return (false);

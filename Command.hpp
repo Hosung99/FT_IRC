@@ -10,20 +10,26 @@ class Server;
 class Command
 {
 private:
+	/* OCCF */
 	Command &operator=(const Command &);
 	Command(const Command &);
-    Server&	_server;
+
+	/* member variables */
+	Server&	_server;
 
 public:
-    Command(Server &server);
+	/* OCCF */
+	Command(Server &server);
 	~Command();
+
+	/* member functions */
 	void run(int);
 	void pass(int, std::vector<std::string> command_vec);
 	void nick(int, std::vector<std::string> command_vec);
 	void user(int, std::vector<std::string> command_vec);
-	bool check_nickname_duplicate(std::string, std::map<int, Client *>);
-	bool check_nickname_validate(std::string);
-	bool check_realname(std::string);
+	bool checkNicknameDuplicate(std::string, std::map<int, Client *>);
+	bool checkNicknameValidate(std::string);
+	bool checkRealname(std::string);
 };
 
 #endif
