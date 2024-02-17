@@ -36,6 +36,18 @@ void Command::run(int fd)
 		{
 			user(fd, command_vec);
 		}
+		else if (command_vec[0] == "CAP")
+		{
+			// cap(fd, command_vec);
+		}
+		else if (command_vec[0] == "PING")
+		{
+			ping(fd, command_vec);
+		}
+		else if (command_vec[0] == "JOIN")
+		{
+			// join(fd, command_vec);
+		}
 		else
 		{
 			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
@@ -158,6 +170,24 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	iter->second->set_user_regist(true);
 }
 
+void Command::ping(int fd, std::vector<std::string> command_vec) {
+	std::map<int, Client *> clients = _server.getClients();
+	std::map<int, Client *>::iterator iter = clients.find(fd);
+
+	// 입력값 예외 처리
+	if (command_vec.size() != 2)
+	{
+		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
+		iter->second->append_client_recv_buf("/PING <token>\r\n");
+		return;
+	}
+
+	// PONG 메시지 전송
+	iter->second->append_client_recv_buf("PONG " + command_vec[1] + "\r\n");
+
+}
+
 bool Command::checkNicknameValidate(std::string nickname)
 {
 	if (nickname.length() == 0 || nickname.length() > 9)
@@ -166,7 +196,7 @@ bool Command::checkNicknameValidate(std::string nickname)
 		return (false);
 	for (size_t i = 1; i < nickname.length(); i++)
 	{
-		if (!isalnum(nickname[i]) && !isspecial(nickname[i]))
+		if (!isalnum(nickname[i]) && isspecial(nickname[i]))
 			return (false);
 	}
 	return (true);
