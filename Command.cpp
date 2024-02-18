@@ -36,10 +36,6 @@ void Command::run(int fd)
 		{
 			user(fd, command_vec);
 		}
-		else if (command_vec[0] == "CAP")
-		{
-			// cap(fd, command_vec);
-		}
 		else if (command_vec[0] == "PING")
 		{
 			ping(fd, command_vec);
