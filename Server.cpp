@@ -195,7 +195,7 @@ void Server::execute()
 		}
 		else if (ret_poll < 0)
 		{
-			throw(std::logic_error("ERROR:: poll() errror"));
+			throw(std::logic_error("ERROR:: poll() error"));
 		}
 	}
 }
