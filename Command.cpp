@@ -20,7 +20,8 @@ void Command::run(int fd)
 	iter = clients.find(fd);
 	while (getline(iss, buffer, ' '))
 	{
-		command_vec.push_back(buffer);
+		std::size_t endPos = buffer.find_last_not_of("\r\n");
+        command_vec.push_back(buffer.substr(0, endPos + 1));
 	}
 	if (!iter->second->get_is_regist())
 	{
@@ -36,14 +37,6 @@ void Command::run(int fd)
 		{
 			user(fd, command_vec);
 		}
-		else if (command_vec[0] == "PING")
-		{
-			ping(fd, command_vec);
-		}
-		else if (command_vec[0] == "JOIN")
-		{
-			// join(fd, command_vec);
-		}
 		else
 		{
 			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
@@ -55,7 +48,8 @@ void Command::run(int fd)
 	}
 	else
 	{
-		// regist 된 client에 대한 명령어 처리
+		if (command_vec[0] == "PING")
+			ping(fd, command_vec);
 	}
 }
 
@@ -77,7 +71,7 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 		iter->second->append_client_recv_buf(ERR_ALREADYREGIST);
 		return;
 	}
-	if (strcmp(command_vec[1].substr(0, command_vec[1].length() - 2).c_str(), password.c_str()) != 0)
+	if (strcmp(command_vec[1].c_str(), password.c_str()) != 0)
 	{
 		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
 		iter->second->append_client_recv_buf(ERR_PASSWDMISMATCH);
@@ -101,6 +95,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
 		clients.erase(fd);
 		close(fd);
+		delete iter->second;
 		return;
 	}
 	if (command_vec.size() < 2)
@@ -126,6 +121,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	{
 		iter->second->set_nickname(command_vec[1]);
 		iter->second->append_client_recv_buf(":" + iter->second->get_nickname() + "NICK" + iter->second->get_nickname() + "\r\n");
+		iter->second->set_nick_regist(true);
 	}
 	else
 	{
@@ -164,6 +160,10 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	}
 	iter->second->set_user(command_vec[1], command_vec[2], command_vec[3], command_vec[4]);
 	iter->second->set_user_regist(true);
+	if (iter->second->get_is_regist())
+	{
+		iter->second->append_client_recv_buf(iter->second->get_nickname() + " : WELCOME TO IRC SERVER\r\n");
+	}
 }
 
 void Command::ping(int fd, std::vector<std::string> command_vec) {
