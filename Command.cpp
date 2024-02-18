@@ -45,11 +45,23 @@ void Command::run(int fd)
 			close(fd);
 			delete iter->second;
 		}
+		if (iter->second && iter->second->get_is_regist())
+		{
+			iter->second->append_client_recv_buf(iter->second->get_nickname() + " : WELCOME TO IRC SERVER\r\n");
+		}
 	}
 	else
 	{
 		if (command_vec[0] == "PING")
 			ping(fd, command_vec);
+		else
+		{
+			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+			iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
+			clients.erase(fd);
+			close(fd);
+			delete iter->second;
+		}
 	}
 }
 
@@ -160,10 +172,6 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	}
 	iter->second->set_user(command_vec[1], command_vec[2], command_vec[3], command_vec[4]);
 	iter->second->set_user_regist(true);
-	if (iter->second->get_is_regist())
-	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " : WELCOME TO IRC SERVER\r\n");
-	}
 }
 
 void Command::ping(int fd, std::vector<std::string> command_vec) {
