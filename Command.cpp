@@ -36,7 +36,7 @@ void Command::run(int fd)
 		else if (command_vec[0] == "USER")
 		{
 			user(fd, command_vec);
-    }
+		}
 		else
 		{
 			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
@@ -49,7 +49,7 @@ void Command::run(int fd)
 		{
 			iter->second->append_client_recv_buf("001 :Welcome to the Internet Relay Network, " + iter->second->get_nickname() + "\r\n");
 		}
-	}
+    }
 	else
 	{
 		if (command_vec[0] == "PING")
