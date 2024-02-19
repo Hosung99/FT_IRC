@@ -36,7 +36,7 @@ void Command::run(int fd)
 		else if (command_vec[0] == "USER")
 		{
 			user(fd, command_vec);
-		}
+    }
 		else
 		{
 			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
