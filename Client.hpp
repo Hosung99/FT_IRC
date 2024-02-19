@@ -49,6 +49,13 @@ class Client
 		void set_nick_regist(bool);
 		void set_user_regist(bool);
 		int get_clientFd();
+
+		std::vector<std::string> &getChannelList();
+		void appendChannelList(std::string channelName);
+		void removeChannel(std::string channelName);
+		void clearChannelList();
+		std::vector<std::string>::iterator findChannel(std::string channelName);
+
 };
 
 #endif

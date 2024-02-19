@@ -19,6 +19,7 @@ class Server
 		std::map<int, Client *> getClients(void);
 		std::string getPassword(void);
 		std::string getMessage(int);
+		std::map<std::string, Client *> getChannelList(void);
 
 	private:
 		/* OCCF */
@@ -29,6 +30,7 @@ class Server
 		/* member variables */
 		Command *_command;
 		std::map<int, Client *> _clients;
+		std::map<std::string, Client *> _channelList;
 		std::string _password;
 		unsigned short int _portNum;
 		int _serverSock;
