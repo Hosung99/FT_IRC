@@ -102,6 +102,11 @@ std::string Server::getMessage(int fd)
 	return (this->_message[fd]);
 }
 
+std::map<std::string, Client *> Server::getChannelList()
+{
+	return (this->_channelList);
+}
+
 int Server::recvMessage(int fd)
 {
 	char buf[2];
