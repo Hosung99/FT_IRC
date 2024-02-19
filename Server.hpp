@@ -5,6 +5,7 @@
 #include "Command.hpp"
 
 class Client;
+class Channel;
 class Command;
 
 class Server
@@ -19,7 +20,7 @@ class Server
 		std::map<int, Client *> getClients(void);
 		std::string getPassword(void);
 		std::string getMessage(int);
-		std::map<std::string, Client *> getChannelList(void);
+		std::map<std::string, Channel *> getChannelList(void);
 
 	private:
 		/* OCCF */
@@ -30,7 +31,7 @@ class Server
 		/* member variables */
 		Command *_command;
 		std::map<int, Client *> _clients;
-		std::map<std::string, Client *> _channelList;
+		std::map<std::string, Channel *> _channelList;
 		std::string _password;
 		unsigned short int _portNum;
 		int _serverSock;
