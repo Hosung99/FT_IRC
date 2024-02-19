@@ -1,61 +1,61 @@
 #include "Channel.hpp"
 
-Channel::Channel(const std::string& channel_name, int fd)
+Channel::Channel(const std::string& channelName, int fd)
 {
-	this->_channel_name = channel_name;
-	this->_channel_fd = fd;
+	this->_channelName = channelName;
+	this->_channelFd = fd;
 }
 
 Channel::~Channel()
 {
 }
 
-void Channel::set_channel_fd(int channel_fd)
+void Channel::setChannelFd(int channelFd)
 {
-	this->_channel_fd = channel_fd;
+	this->_channelFd = channelFd;
 }
 
-void Channel::set_channel_name(std::string& channel_name)
+void Channel::setChannelName(std::string& channelName)
 {
-	this->_channel_name = channel_name;
+	this->_channelName = channelName;
 }
 
-void Channel::append_client_fd_list(int client_fd)
+void Channel::appendClientFdList(int client_fd)
 {
-	this->_client_fd_list.push_back(client_fd);
+	this->_clientFdList.push_back(client_fd);
 }
 
-void Channel::remove_client_fd_list(int client_fd)
+void Channel::removeClientFdList(int client_fd)
 {
-	std::vector<int>::iterator it = std::find(this->_client_fd_list.begin(), this->_client_fd_list.end(), client_fd);
-	if (it != this->_client_fd_list.end())
-		this->_client_fd_list.erase(it);
+	std::vector<int>::iterator it = findMyClientIt(client_fd);
+	if (it != this->_clientFdList.end())
+		this->_clientFdList.erase(it);
 }
 
-int Channel::get_channel_fd()
+int Channel::getChannelFd()
 {
-	return (this->_channel_fd);
+	return (this->_channelFd);
 }
 
-std::string Channel::get_channel_name()
+std::string Channel::getChannelName()
 {
-	return (this->_channel_name);
+	return (this->_channelName);
 }
 
-std::vector<int> Channel::get_client_fd_list()
+std::vector<int> Channel::getClientFdList()
 {
-	return (this->_client_fd_list);
+	return (this->_clientFdList);
 }
 
 std::vector<int>::iterator Channel::findMyClientIt(int fd)
 {
-	return (std::find(this->_client_fd_list.begin(), this->_client_fd_list.end(), fd));
+	return (std::find(this->_clientFdList.begin(), this->_clientFdList.end(), fd));
 }
 
 bool Channel::checkClientInChannel(int fd)
 {
 	std::vector<int>::iterator it = findMyClientIt(fd);
-	if (it != this->_client_fd_list.end())
+	if (it != this->_clientFdList.end())
 		return (true);
 	return (false);
 }
