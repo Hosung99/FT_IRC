@@ -49,11 +49,17 @@ void Command::run(int fd)
 		{
 			iter->second->append_client_recv_buf("001 :Welcome to the Internet Relay Network, " + iter->second->get_nickname() + "\r\n");
 		}
-    }
+	}
 	else
 	{
 		if (command_vec[0] == "PING")
 			ping(fd, command_vec);
+		else if (command_vec[0] == "USER")
+			user(fd, command_vec);
+		else if (command_vec[0] == "NICK")
+			nick(fd, command_vec);
+		else if (command_vec[0] == "PASS")
+			pass(fd, command_vec);
 		// else
 		// {
 		// 	iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
@@ -70,22 +76,21 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	std::string password = _server.getPassword();
-	if (command_vec.size() < 2) // rfc문서상으론 multple pass commands가 가능하다는데, 그게 PASS command가 여러개가 들어오는건지, PASS command에 여러개의 password가 들어오는건지 모르겠음
-	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " ");
-		iter->second->append_client_recv_buf("PASS: ");
-		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
-		return;
-	}
 	if (iter->second->get_pass_regist())
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf("462 :");
 		iter->second->append_client_recv_buf(ERR_ALREADYREGIST);
+		return;
+	}
+	if (command_vec.size() < 2)
+	{
+		iter->second->append_client_recv_buf("461 PASS: ");
+		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
 		return;
 	}
 	if (strcmp(command_vec[1].c_str(), password.c_str()) != 0)
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf("464 :");
 		iter->second->append_client_recv_buf(ERR_PASSWDMISMATCH);
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
 		clients.erase(fd);
@@ -102,7 +107,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	if (!iter->second->get_pass_regist())
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf("451 :");
 		iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
 		clients.erase(fd);
@@ -112,43 +117,45 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	}
 	if (command_vec.size() < 2)
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf("431 :");
 		iter->second->append_client_recv_buf(ERR_NONICKNAMEGIVEN);
 		return;
 	}
 	if (!checkNicknameValidate(command_vec[1]))
 	{
-		iter->second->append_client_recv_buf(command_vec[1] + " :");
+		iter->second->append_client_recv_buf("432 :");
 		iter->second->append_client_recv_buf(ERR_ERRONEUSNICKNAME);
 		iter->second->append_client_recv_buf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
 		return;
 	}
 	if (!checkNicknameDuplicate(command_vec[1], _server.getClients()))
 	{
-		iter->second->append_client_recv_buf(command_vec[1] + " :");
+		iter->second->append_client_recv_buf("433 :");
 		iter->second->append_client_recv_buf(ERR_NICKNAMEINUSE);
 		return;
 	}
-	if (!iter->second->get_nick_regist())
-	{
-		iter->second->set_nickname(command_vec[1]);
-		iter->second->append_client_recv_buf(":" + iter->second->get_nickname() + "NICK" + iter->second->get_nickname() + "\r\n");
-		iter->second->set_nick_regist(true);
-	}
-	else
-	{
-		// 등록 되어있다면, 해당 클라이언트 fd의 닉네임을 바꾸겠단 뜻이다.
-		// 해당 클라이언트가 속한 모든 채널을 돌며 닉네임을 바꾸었다고 알려준다.
-	}
+	std::string old_nickname = iter->second->get_nickname();
+	iter->second->set_nickname(command_vec[1]);
+	if (old_nickname == "Client")
+		old_nickname = iter->second->get_nickname();
+	iter->second->append_client_recv_buf(":" + old_nickname + " NICK " + iter->second->get_nickname() + "\r\n");
+	iter->second->set_nick_regist(true);
+	// + 해당 클라이언트가 속한 모든 채널을 돌며 닉네임을 바꾸었다고 알려준다.
 }
 
 void Command::user(int fd, std::vector<std::string> command_vec)
 {
 	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
+	if (iter->second->get_user_regist())
+	{
+		iter->second->append_client_recv_buf("462 :");
+		iter->second->append_client_recv_buf(ERR_ALREADYREGIST);
+		return;
+	}
 	if (!iter->second->get_pass_regist())
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf("451 :");
 		iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
 		iter->second->append_client_recv_buf("\r\n");
 		send(fd, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
@@ -159,18 +166,19 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	}
 	if (command_vec.size() < 5 || !checkRealname(command_vec[4]))
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " USER :");
+		iter->second->append_client_recv_buf("461 USER :");
 		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
 		iter->second->append_client_recv_buf("/USER <username> <hostname> <servername> <:realname>\r\n");
 		return;
 	}
-	if (iter->second->get_user_regist())
+	std::string realname;
+	for(size_t i = 4; i < command_vec.size(); i++)
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
-		iter->second->append_client_recv_buf(ERR_ALREADYREGIST);
-		return;
+		realname += command_vec[i];
+		if (i != command_vec.size() - 1)
+			realname += " ";
 	}
-	iter->second->set_user(command_vec[1], command_vec[2], command_vec[3], command_vec[4]);
+	iter->second->set_user(command_vec[1], command_vec[2], command_vec[3], realname);
 	iter->second->set_user_regist(true);
 }
 
@@ -179,15 +187,13 @@ void Command::ping(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 
-	// 입력값 예외 처리
-	if (command_vec.size() != 2)
+	if (command_vec.size() < 2)
 	{
-		iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		iter->second->append_client_recv_buf("461 :");
 		iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
 		iter->second->append_client_recv_buf("/PING <token>\r\n");
 		return;
 	}
-	// PONG 메시지 전송
 	iter->second->append_client_recv_buf("PONG " + command_vec[1] + "\r\n");
 }
 

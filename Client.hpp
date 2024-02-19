@@ -22,9 +22,6 @@ class Client
 		bool _isRegistPass;
 		bool _isRegistNick;
 		bool _isRegistUser;
-		// todo channel list 추가 해야함
-		// regist
-
 	public:
 		/* OCCF */
 		Client(int clientfd);
