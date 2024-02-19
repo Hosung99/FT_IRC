@@ -21,7 +21,7 @@ void Command::run(int fd)
 	while (getline(iss, buffer, ' '))
 	{
 		std::size_t endPos = buffer.find_last_not_of("\r\n");
-        command_vec.push_back(buffer.substr(0, endPos + 1));
+		command_vec.push_back(buffer.substr(0, endPos + 1));
 	}
 	if (!iter->second->get_is_regist())
 	{
@@ -47,21 +47,21 @@ void Command::run(int fd)
 		}
 		if (iter->second && iter->second->get_is_regist())
 		{
-			iter->second->append_client_recv_buf(iter->second->get_nickname() + " : WELCOME TO IRC SERVER\r\n");
+			iter->second->append_client_recv_buf("001 :Welcome to the Internet Relay Network, " + iter->second->get_nickname() + "\r\n");
 		}
 	}
 	else
 	{
 		if (command_vec[0] == "PING")
 			ping(fd, command_vec);
-		else
-		{
-			iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
-			iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
-			clients.erase(fd);
-			close(fd);
-			delete iter->second;
-		}
+		// else
+		// {
+		// 	iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
+		// 	iter->second->append_client_recv_buf(ERR_NOTREGISTERED);
+		// 	clients.erase(fd);
+		// 	close(fd);
+		// 	delete iter->second;
+		// }
 	}
 }
 
@@ -174,7 +174,8 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	iter->second->set_user_regist(true);
 }
 
-void Command::ping(int fd, std::vector<std::string> command_vec) {
+void Command::ping(int fd, std::vector<std::string> command_vec)
+{
 	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 
@@ -186,10 +187,8 @@ void Command::ping(int fd, std::vector<std::string> command_vec) {
 		iter->second->append_client_recv_buf("/PING <token>\r\n");
 		return;
 	}
-
 	// PONG 메시지 전송
 	iter->second->append_client_recv_buf("PONG " + command_vec[1] + "\r\n");
-
 }
 
 bool Command::checkNicknameValidate(std::string nickname)
