@@ -102,7 +102,7 @@ std::string Server::getMessage(int fd)
 	return (this->_message[fd]);
 }
 
-std::map<std::string, Client *> Server::getChannelList()
+std::map<std::string, Channel *> Server::getChannelList()
 {
 	return (this->_channelList);
 }
