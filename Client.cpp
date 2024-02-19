@@ -121,3 +121,36 @@ bool	Client::get_is_regist()
 {
 	return (_isRegistPass && _isRegistNick && _isRegistUser);
 }
+
+std::vector<std::string> &Client::getChannelList()
+{
+	return (this->_channelList);
+}
+
+void Client::appendChannelList(std::string channelName)
+{
+	this->_channelList.push_back(channelName);
+}
+
+void Client::removeChannel(std::string channelName)
+{
+	std::vector<std::string>::iterator iter = findChannel(channelName);
+	if (iter != _channelList.end())
+		_channelList.erase(iter);
+}
+
+void Client::clearChannelList()
+{
+	this->_channelList.clear();
+}
+
+std::vector<std::string>::iterator Client::findChannel(std::string channelName)
+{
+	std::vector<std::string>::iterator iter = _channelList.begin();
+	for (; iter != _channelList.end(); iter++)
+	{
+		if (*iter == channelName)
+			return (iter);
+	}
+	return (iter);
+}
