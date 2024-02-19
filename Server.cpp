@@ -165,11 +165,11 @@ void Server::execute()
 						if (_strLen <= 0)
 						{
 							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
-							_clients.find(i)->second->clear_client_recv_buf();
-							_clients.erase(i);
+							Client* client = _clients.find(_fds[i].fd)->second;
+							client->clear_client_recv_buf();
+							_clients.erase(_fds[i].fd);
 							close(_fds[i].fd);
-							delete _clients.find(i)->second;
-							_fds[i].fd = -1;
+							delete client;
 						}
 						else
 						{
