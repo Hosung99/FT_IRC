@@ -1,5 +1,4 @@
 #include "Command.hpp"
-#include "Channel.hpp"
 
 Command::Command(Server &server) : _server(server) {}
 Command::~Command() {}
@@ -65,6 +64,8 @@ void Command::run(int fd)
 			privmsg(fd, command_vec);
 		else if (command_vec[0] == "QUIT")
 			quit(fd, command_vec);
+		else if (command_vec[0] == "JOIN")
+			join(fd, command_vec);
 		// else
 		// {
 		// 	iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
@@ -355,4 +356,67 @@ void Command::channelPART(int fd, std::string channelName, std::vector<std::stri
 			target->append_client_recv_buf(":" + target->get_nickname() + +"!" + target->get_username() + "@" + target->get_servername() + client_iter->second->get_nickname() + " PART " + channel->getChannelName() + " " + message + "\r\n");
 		}
 	}
+}
+
+void Command::join(int fd, std::vector<std::string> command_vec)
+{
+	std::vector<std::string> joinChannel = split(command_vec[1], ',');
+	std::vector<std::string>::iterator iter = joinChannel.begin();
+	std::map<int, Client *> clients = _server.getClients();
+	Client* client = clients.find(fd)->second;
+	while (iter != joinChannel.end())
+	{
+		if ((*iter)[0] != '#')
+		{
+			// ERR_NOSUCHCHANNEL
+			return;
+		}
+		std::map<std::string, Channel *> channelList = _server.getChannelList();
+		std::map<std::string, Channel *>::iterator channelIt = channelList.find(*iter);
+		if (channelIt != channelList.end()) // 채널이 있다면
+		{
+			// 해당 클라이언트를 채널에 넣어준다.
+			std::string channelName = (*channelIt).second->getChannelName();
+			_server.findChannel(channelName)->setOperator(fd);
+			(*channelIt).second->appendClientFdList(fd);
+			client->appendChannelList(channelName); // 클라이언트에 채널을 추가 해준다.
+			msgToAllChannel(fd, channelName, "JOIN", ""); // 채널에 JOIN 메시지를 보내준다.
+		}
+		else // 채널이 없다면
+		{
+			_server.appendNewChannel(*iter, fd); // 서버에 채널을 추가 해준다.
+			_server.findChannel(*iter)->appendClientFdList(fd); //해당 클라이언트를 채널에 넣어준다.
+			client->appendChannelList(*iter);
+			msgToAllChannel(fd, *iter, "JOIN", "");
+		}
+
+		iter++;
+	}
+}
+
+void Command::msgToAllChannel(int target, std::string channelName, std::string command, std::string msg)
+{
+	std::map<std::string, Channel *> channelList = _server.getChannelList();
+	if (channelList.find(channelName) == channelList.end())
+	{
+		// ERR_NOSUCHCHANNEL
+		return;
+	}
+	Channel *channel = channelList.find(channelName)->second;
+	std::vector<int> clientFdList = channel->getClientFdList();
+	std::vector<int>::iterator iter = clientFdList.begin();
+	while (iter != clientFdList.end())
+	{
+		Client *client = _server.getClients().find(*iter)->second;
+		client->append_client_recv_buf(makeFullName(target) + " " + command + " " + channelName + " " + msg + "\r\n");
+		iter++;
+	}
+}
+
+std::string Command::makeFullName(int fd)
+{
+	std::map<int, Client *> clients = _server.getClients();
+	std::map<int, Client *>::iterator clientIt = clients.find(fd);
+	Client *client = clientIt->second;
+	return (":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname());
 }

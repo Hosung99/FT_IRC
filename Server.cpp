@@ -107,6 +107,11 @@ std::map<std::string, Channel *> Server::getChannelList()
 	return (this->_channelList);
 }
 
+void Server::appendNewChannel(std::string& channelName, int fd)
+{
+	_channelList.insert(std::make_pair(channelName, new Channel(channelName, fd)));
+}
+
 int Server::recvMessage(int fd)
 {
 	char buf[2];

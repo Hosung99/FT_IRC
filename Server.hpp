@@ -3,6 +3,7 @@
 
 #include "main.hpp"
 #include "Command.hpp"
+#include "Channel.hpp"
 
 class Client;
 class Channel;
@@ -24,6 +25,7 @@ public:
 	Channel *findChannel(std::string channelName);
 	Client *findClient(std::string channelName);
 	void removeChannel(std::string channelName);
+	void appendNewChannel(std::string& channelName, int fd);
 
 private:
 	/* OCCF */
