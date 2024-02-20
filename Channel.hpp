@@ -1,27 +1,27 @@
 #ifndef CHANNEL_HPP
-# define CHANNEL_HPP
+#define CHANNEL_HPP
 
-# include "main.hpp"
+#include "main.hpp"
 
 class Channel
 {
 private:
-	int _channelFd;
+	int _operatorFd;
 	std::string _channelName;
 	std::vector<int> _clientFdList;
 
 public:
-	Channel(const std::string& channelName, int fd);
+	Channel(const std::string &channelName, int fd);
 	~Channel();
-	void setChannelFd(int channelFd);
-	void setChannelName(std::string& channelName);
+	void setChannelName(std::string &channelName);
 	void appendClientFdList(int clientFd);
 	void removeClientFdList(int clientFd);
-	int getChannelFd();
+	int getOperatorFd();
 	std::string getChannelName();
 	std::vector<int> getClientFdList();
 	std::vector<int>::iterator findMyClientIt(int fd);
 	bool checkClientInChannel(int fd);
+	void setOperator(int fd);
 };
 
 #endif

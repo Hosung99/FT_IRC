@@ -6,6 +6,7 @@
 
 class Client;
 class Server;
+class Channel;
 
 class Command
 {
@@ -15,7 +16,7 @@ private:
 	Command(const Command &);
 
 	/* member variables */
-	Server&	_server;
+	Server &_server;
 
 public:
 	/* OCCF */
@@ -28,6 +29,11 @@ public:
 	void nick(int, std::vector<std::string> command_vec);
 	void user(int, std::vector<std::string> command_vec);
 	void ping(int, std::vector<std::string> command_vec);
+	void privmsg(int, std::vector<std::string> command_vec);
+	void quit(int, std::vector<std::string> command_vec);
+	std::string channelMessage(int index, std::vector<std::string> command_vec);
+	void channelPRIVMSG(std::string message, Client *client, Channel *channel);
+	void channelPART(int, std::string channelName, std::vector<std::string> command_vec);
 	bool checkNicknameDuplicate(std::string, std::map<int, Client *>);
 	bool checkNicknameValidate(std::string);
 	bool checkRealname(std::string);

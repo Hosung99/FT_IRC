@@ -26,7 +26,11 @@
 #define ERR_NONICKNAMEGIVEN "No nickname given\r\n"
 #define ERR_ERRONEUSNICKNAME "Erroneus nickname\r\n"
 
-// common
+// PRIVMSG
+#define ERR_NOSUCHCHANNEL "No such channel\r\n"
+#define ERR_NOSUCHNICK "No such nick/channel\r\n"
+
+// COMMON
 #define ERR_NOTREGISTERED "You have not registered\r\n"
 
 #endif

@@ -1,21 +1,16 @@
 #include "Channel.hpp"
 
-Channel::Channel(const std::string& channelName, int fd)
+Channel::Channel(const std::string &channelName, int fd)
 {
 	this->_channelName = channelName;
-	this->_channelFd = fd;
+	this->_operatorFd = fd;
 }
 
 Channel::~Channel()
 {
 }
 
-void Channel::setChannelFd(int channelFd)
-{
-	this->_channelFd = channelFd;
-}
-
-void Channel::setChannelName(std::string& channelName)
+void Channel::setChannelName(std::string &channelName)
 {
 	this->_channelName = channelName;
 }
@@ -32,9 +27,9 @@ void Channel::removeClientFdList(int client_fd)
 		this->_clientFdList.erase(it);
 }
 
-int Channel::getChannelFd()
+int Channel::getOperatorFd()
 {
-	return (this->_channelFd);
+	return (this->_operatorFd);
 }
 
 std::string Channel::getChannelName()
@@ -58,4 +53,9 @@ bool Channel::checkClientInChannel(int fd)
 	if (it != this->_clientFdList.end())
 		return (true);
 	return (false);
+}
+
+void Channel::setOperator(int fd)
+{
+	this->_operatorFd = fd;
 }
