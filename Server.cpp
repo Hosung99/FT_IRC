@@ -204,3 +204,27 @@ void Server::execute()
 		}
 	}
 }
+
+Channel *Server::findChannel(std::string channel_name)
+{
+	std::map<std::string, Channel *>::iterator iter = _channelList.find(channel_name);
+	if (iter == _channelList.end())
+		return (NULL);
+	return (iter->second);
+}
+
+Client *Server::findClient(std::string nickname)
+{
+	std::map<int, Client *>::iterator iter = _clients.begin();
+	for (; iter != _clients.end(); iter++)
+	{
+		if (iter->second->get_nickname() == nickname)
+			return (iter->second);
+	}
+	return (NULL);
+}
+
+void	Server::removeChannel(std::string channel_name)
+{
+	_channelList.erase(channel_name);
+}
