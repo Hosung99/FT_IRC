@@ -64,6 +64,8 @@ void Command::run(int fd)
 			privmsg(fd, command_vec);
 		else if (command_vec[0] == "QUIT")
 			quit(fd, command_vec);
+		else if (command_vec[0] == "PART")
+			part(fd, command_vec);
 		else if (command_vec[0] == "JOIN")
 			join(fd, command_vec);
 		// else
@@ -278,6 +280,55 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 	clients.erase(fd);
 	close(fd);
 	delete client_iter->second;
+}
+
+void Command::part(int fd, std::vector<std::string> command_vec)
+{
+	std::map<int, Client *> clients = _server.getClients();
+	std::map<int, Client *>::iterator client_iter = clients.find(fd);
+	if (command_vec.size() < 2)
+	{
+		client_iter->second->append_client_recv_buf("461 :");
+		client_iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
+		return;
+	}
+	std::istringstream iss(command_vec[1]);
+	std::string buffer;
+	std::vector<std::string> vec;
+	while (getline(iss, buffer, ','))
+		vec.push_back(buffer);
+	std::vector<std::string>::iterator vec_iter = vec.begin();
+	for (; vec_iter != vec.end(); vec_iter++)
+	{
+		std::vector<std::string>::iterator channelList = client_iter->second->findChannel(*vec_iter);
+		if (channelList != client_iter->second->getChannelList().end())
+		{
+			Channel *channel = _server.findChannel(*channelList);
+			channel->removeClientFdList(fd);
+			channelPART(fd, channel->getChannelName(), command_vec);
+			client_iter->second->removeChannel(*channelList);
+			if (channel->getClientFdList().empty())
+			{
+				_server.removeChannel(channel->getChannelName());
+				delete channel;
+			}
+			else
+			{
+				channel->setOperator(channel->getClientFdList().front());
+			}
+		}
+		else
+		{
+			if (_server.findChannel(*vec_iter))
+			{
+				client_iter->second->append_client_recv_buf("442 " + *vec_iter + " :" + ERR_NOTONCHANNEL);
+			}
+			else
+			{
+				client_iter->second->append_client_recv_buf("403 " + *vec_iter + " :" + ERR_NOSUCHCHANNEL);
+			}
+		}
+	}
 }
 
 bool Command::checkNicknameValidate(std::string nickname)

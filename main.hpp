@@ -29,6 +29,10 @@
 #define ERR_NOSUCHCHANNEL "No such channel\r\n"
 #define ERR_NOSUCHNICK "No such nick/channel\r\n"
 
+// PART
+#define ERR_NOSUCHCHANNEL "No such channel\r\n"
+#define ERR_NOTONCHANNEL "You're not on that channel\r\n"
+
 // COMMON
 #define ERR_NOTREGISTERED "You have not registered\r\n"
 
