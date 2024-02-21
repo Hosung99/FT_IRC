@@ -4,10 +4,12 @@ Channel::Channel(const std::string &channelName, int fd)
 {
 	this->_channelName = channelName;
 	this->_operatorFd = fd;
+	this->_bot = new Bot();
 }
 
 Channel::~Channel()
 {
+	delete this->_bot;
 }
 
 void Channel::setChannelName(std::string &channelName)
@@ -58,4 +60,9 @@ bool Channel::checkClientInChannel(int fd)
 void Channel::setOperator(int fd)
 {
 	this->_operatorFd = fd;
+}
+
+Bot *Channel::getBot()
+{
+	return (this->_bot);
 }

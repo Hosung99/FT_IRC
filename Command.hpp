@@ -18,7 +18,7 @@ private:
 	Command(const Command &);
 
 	/* member variables */
-	Server&	_server;
+	Server &_server;
 
 public:
 	/* OCCF */
@@ -36,6 +36,7 @@ public:
 	void part(int fd, std::vector<std::string> command_vec);
 	void join(int fd, std::vector<std::string> command_vec);
 	void kick(int fd, std::vector<std::string> command_vec);
+	void botCommand(int fd, std::vector<std::string> command_vec);
 	std::string channelMessage(int index, std::vector<std::string> command_vec);
 	void channelPRIVMSG(std::string message, Client *client, Channel *channel);
 	void channelPART(int, std::string channelName, std::vector<std::string> command_vec);
@@ -45,6 +46,7 @@ public:
 	bool checkNicknameDuplicate(std::string, std::map<int, Client *>);
 	bool checkNicknameValidate(std::string);
 	bool checkRealname(std::string);
+	bool checkBotCommand(std::string);
 };
 
 #endif

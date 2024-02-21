@@ -39,6 +39,28 @@ Server::Server(char *portNum, char *password)
 Server::~Server()
 {
 	close(_serverSock);
+	std::map<int, Client *>::iterator iter = _clients.begin();
+	for (; iter != _clients.end(); iter++)
+	{
+		close(iter->first);
+		delete iter->second;
+	}
+	std::map<std::string, Channel *>::iterator iter2 = _channelList.begin();
+	for (; iter2 != _channelList.end(); iter2++)
+	{
+		delete iter2->second;
+	}
+	_clients.clear();
+	_channelList.clear();
+	delete _command;
+	delete _bot;
+}
+
+void Server::setBot()
+{
+	_bot = new Client(-1);
+	_bot->makeClientToBot();
+	_clients.insert(std::make_pair(-1, _bot));
 }
 
 void Server::run()
@@ -47,6 +69,7 @@ void Server::run()
 	setServerAddr();
 	setServerBind();
 	setServerListen();
+	setBot();
 	memset(_fds, 0, sizeof(_fds));
 	_fds[0].fd = _serverSock;
 	_fds[0].events = POLLIN;
@@ -176,7 +199,7 @@ void Server::execute()
 						{
 							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
 							Client* client = _clients.find(_fds[i].fd)->second;
-							client->clear_client_recv_buf();
+							client->clearClientRecvBuf();
 							_clients.erase(_fds[i].fd);
 							close(_fds[i].fd);
 							delete client;
@@ -196,10 +219,10 @@ void Server::execute()
 			std::map<int, Client *>::iterator iter = _clients.begin();
 			for (; iter != _clients.end(); iter++)
 			{
-				if (iter->second->get_client_recv_buf().length() > 0)
+				if (iter->second->getClientRecvBuf().length() > 0)
 				{
-					send(iter->first, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
-					iter->second->clear_client_recv_buf();
+					send(iter->first, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
+					iter->second->clearClientRecvBuf();
 				}
 			}
 		}
@@ -223,7 +246,7 @@ Client *Server::findClient(std::string nickname)
 	std::map<int, Client *>::iterator iter = _clients.begin();
 	for (; iter != _clients.end(); iter++)
 	{
-		if (iter->second->get_nickname() == nickname)
+		if (iter->second->getNickname() == nickname)
 			return (iter->second);
 	}
 	return (NULL);
