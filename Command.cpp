@@ -68,6 +68,8 @@ void Command::run(int fd)
 			part(fd, command_vec);
 		else if (command_vec[0] == "JOIN")
 			join(fd, command_vec);
+		else if (command_vec[0] == "KICK")
+			kick(fd, command_vec);
 		// else
 		// {
 		// 	iter->second->append_client_recv_buf(iter->second->get_nickname() + " :");
@@ -223,7 +225,7 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 	std::vector<std::string>::iterator vec_iter = vec.begin();
 	for (; vec_iter != vec.end(); vec_iter++)
 	{
-		if ((*vec_iter)[0] == '#') // 채널에 메시지를 보낸다
+		if ((*vec_iter)[0] == '#' || (*vec_iter)[0] == '&') // 채널에 메시지를 보낸다
 		{
 			Channel *channel = _server.findChannel(*vec_iter);
 			if (channel) // 해당 채널을 찾음
@@ -304,8 +306,8 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 		if (channelList != client_iter->second->getChannelList().end())
 		{
 			Channel *channel = _server.findChannel(*channelList);
+			msgToAllChannel(fd, *vec_iter, "PART", channelMessage(2, command_vec));
 			channel->removeClientFdList(fd);
-			channelPART(fd, channel->getChannelName(), command_vec);
 			client_iter->second->removeChannel(*channelList);
 			if (channel->getClientFdList().empty())
 			{
@@ -367,13 +369,15 @@ bool Command::checkRealname(std::string realname)
 
 std::string Command::channelMessage(int index, std::vector<std::string> command_vec)
 {
-	std::string message;
+	std::string message = "";
 	for (size_t i = index; i < command_vec.size(); i++)
 	{
 		message += command_vec[i];
 		if (i != command_vec.size() - 1)
 			message += " ";
 	}
+	if (message.length() == 0)
+		message = "NO REASON";
 	return (message);
 }
 
@@ -404,7 +408,7 @@ void Command::channelPART(int fd, std::string channelName, std::vector<std::stri
 		if (*fd_iter != fd)
 		{
 			Client *target = _server.getClients().find(*fd_iter)->second;
-			target->append_client_recv_buf(":" + target->get_nickname() + +"!" + target->get_username() + "@" + target->get_servername() + client_iter->second->get_nickname() + " PART " + channel->getChannelName() + " " + message + "\r\n");
+			target->append_client_recv_buf(":" + target->get_nickname() + "!" + target->get_username() + "@" + target->get_servername() + client_iter->second->get_nickname() + " PART " + channel->getChannelName() + " " + message + "\r\n");
 		}
 	}
 }
@@ -414,7 +418,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 	std::vector<std::string> joinChannel = split(command_vec[1], ',');
 	std::vector<std::string>::iterator iter = joinChannel.begin();
 	std::map<int, Client *> clients = _server.getClients();
-	Client* client = clients.find(fd)->second;
+	Client *client = clients.find(fd)->second;
 	while (iter != joinChannel.end())
 	{
 		if ((*iter)[0] != '#')
@@ -428,20 +432,77 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		{
 			// 해당 클라이언트를 채널에 넣어준다.
 			std::string channelName = (*channelIt).second->getChannelName();
-			_server.findChannel(channelName)->setOperator(fd);
 			(*channelIt).second->appendClientFdList(fd);
-			client->appendChannelList(channelName); // 클라이언트에 채널을 추가 해준다.
+			client->appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
 			msgToAllChannel(fd, channelName, "JOIN", ""); // 채널에 JOIN 메시지를 보내준다.
 		}
 		else // 채널이 없다면
 		{
-			_server.appendNewChannel(*iter, fd); // 서버에 채널을 추가 해준다.
-			_server.findChannel(*iter)->appendClientFdList(fd); //해당 클라이언트를 채널에 넣어준다.
+			_server.appendNewChannel(*iter, fd);				// 서버에 채널을 추가 해준다.
+			_server.findChannel(*iter)->appendClientFdList(fd); // 해당 클라이언트를 채널에 넣어준다.
 			client->appendChannelList(*iter);
 			msgToAllChannel(fd, *iter, "JOIN", "");
+			_server.findChannel(*iter)->setOperator(fd);
 		}
 		nameListMsg(fd, *iter);
 		iter++;
+	}
+}
+
+void Command::kick(int fd, std::vector<std::string> command_vec)
+{
+	std::map<int, Client *> clients = _server.getClients();
+	std::map<int, Client *>::iterator client_iter = clients.find(fd);
+	if (command_vec.size() < 3)
+	{
+		client_iter->second->append_client_recv_buf("461 :");
+		client_iter->second->append_client_recv_buf(ERR_NEEDMOREPARAMS);
+		return;
+	}
+	std::istringstream iss(command_vec[1]);
+	std::string buffer;
+	std::vector<std::string> vec;
+	while (getline(iss, buffer, ','))
+		vec.push_back(buffer);
+	std::vector<std::string>::iterator vec_iter = vec.begin();
+	if (_server.findChannel(*vec_iter)->getOperatorFd() != fd)
+	{
+		std::cout << "operator fd : " << _server.findChannel(*vec_iter)->getOperatorFd() << std::endl;
+		client_iter->second->append_client_recv_buf("482 " + *vec_iter + " :" + ERR_CHANOPRIVSNEEDED);
+		return;
+	}
+	for (; vec_iter != vec.end(); vec_iter++)
+	{
+		Channel *channel = _server.findChannel(*vec_iter);
+		if (channel == NULL)
+		{
+			client_iter->second->append_client_recv_buf("403 " + *vec_iter + " :" + ERR_NOSUCHCHANNEL);
+		}
+		else
+		{
+			Client *target = _server.findClient(command_vec[2]);
+			if (target->get_nickname() == client_iter->second->get_nickname())
+			{
+				return ;
+			}
+			if (target == NULL)
+			{
+				client_iter->second->append_client_recv_buf("401 " + command_vec[2] + " :" + ERR_NOSUCHNICK);
+			}
+			else
+			{
+				if (!channel->checkClientInChannel(target->get_clientFd()))
+				{
+					client_iter->second->append_client_recv_buf("441 " + command_vec[2] + " " + *vec_iter + " :" + ERR_USERNOTINCHANNEL);
+				}
+				else
+				{
+					msgToAllChannel(fd, *vec_iter, "KICK", command_vec[2]);
+					channel->removeClientFdList(target->get_clientFd());
+					target->removeChannel(*vec_iter);
+				}
+			}
+		}
 	}
 }
 
@@ -469,7 +530,8 @@ std::string Command::makeFullName(int fd)
 	std::map<int, Client *> clients = _server.getClients();
 	std::map<int, Client *>::iterator clientIt = clients.find(fd);
 	Client *client = clientIt->second;
-	return (":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname());
+	std::string temp = (":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_servername());
+	return temp;
 }
 
 void Command::nameListMsg(int fd, std::string channelName)
@@ -494,5 +556,5 @@ void Command::nameListMsg(int fd, std::string channelName)
 	}
 	Client *client = _server.getClients().find(fd)->second;
 	client->append_client_recv_buf("353 " + client->get_nickname() + " = " + channelName + " :" + message + "\r\n");
-	client->append_client_recv_buf("366 " + client->get_nickname() + " " + channelName + " :End of /NAMES list.\r\n");
+	client->append_client_recv_buf("366 " + client->get_nickname() + " " + channelName + " :End of NAMES list.\r\n");
 }

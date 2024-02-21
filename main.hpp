@@ -33,6 +33,10 @@
 #define ERR_NOSUCHCHANNEL "No such channel\r\n"
 #define ERR_NOTONCHANNEL "You're not on that channel\r\n"
 
+// KICK
+#define ERR_CHANOPRIVSNEEDED "You're not channel operator\r\n"
+#define ERR_USERNOTINCHANNEL "They aren't on that channel\r\n"
+
 // COMMON
 #define ERR_NOTREGISTERED "You have not registered\r\n"
 
