@@ -2,14 +2,15 @@
 #define CHANNEL_HPP
 
 #include "main.hpp"
+#include "Bot.hpp"
 
 class Channel
 {
 private:
 	int _operatorFd;
+	Bot *_bot;
 	std::string _channelName;
 	std::vector<int> _clientFdList;
-
 public:
 	Channel(const std::string &channelName, int fd);
 	~Channel();
@@ -22,6 +23,7 @@ public:
 	std::vector<int>::iterator findMyClientIt(int fd);
 	bool checkClientInChannel(int fd);
 	void setOperator(int fd);
+	Bot *getBot();
 };
 
 #endif

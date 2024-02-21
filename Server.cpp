@@ -39,6 +39,28 @@ Server::Server(char *portNum, char *password)
 Server::~Server()
 {
 	close(_serverSock);
+	std::map<int, Client *>::iterator iter = _clients.begin();
+	for (; iter != _clients.end(); iter++)
+	{
+		close(iter->first);
+		delete iter->second;
+	}
+	std::map<std::string, Channel *>::iterator iter2 = _channelList.begin();
+	for (; iter2 != _channelList.end(); iter2++)
+	{
+		delete iter2->second;
+	}
+	_clients.clear();
+	_channelList.clear();
+	delete _command;
+	delete _bot;
+}
+
+void Server::setBot()
+{
+	_bot = new Client(-1);
+	_bot->makeClientToBot();
+	_clients.insert(std::make_pair(-1, _bot));
 }
 
 void Server::run()
@@ -47,6 +69,7 @@ void Server::run()
 	setServerAddr();
 	setServerBind();
 	setServerListen();
+	setBot();
 	memset(_fds, 0, sizeof(_fds));
 	_fds[0].fd = _serverSock;
 	_fds[0].events = POLLIN;

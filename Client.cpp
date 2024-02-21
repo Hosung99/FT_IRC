@@ -139,3 +139,15 @@ std::vector<std::string>::iterator Client::findChannel(std::string channelName)
 	}
 	return (iter);
 }
+
+void Client::makeClientToBot()
+{
+	_nickName = "Bot";
+	_userName = "Bot";
+	_hostName = "Bot";
+	_serverName = "Bot";
+	_realName = "Bot";
+	this->_isRegistPass = true;
+	this->_isRegistNick = true;
+	this->_isRegistUser = true;
+}

@@ -1,8 +1,8 @@
 CPP = c++
 CFLAGS = -Wall -Werror -Wextra -std=c++98
 NAME = ./ircserv
-SRCS = main.cpp Server.cpp Client.cpp Command.cpp Util.cpp Channel.cpp
-HEADS = main.hpp Server.hpp Client.hpp Command.hpp Util.hpp Channel.hpp
+SRCS = main.cpp Server.cpp Client.cpp Command.cpp Util.cpp Channel.cpp Bot.cpp
+HEADS = main.hpp Server.hpp Client.hpp Command.hpp Util.hpp Channel.hpp Bot.hpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)

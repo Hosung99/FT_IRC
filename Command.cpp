@@ -230,6 +230,11 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 			Channel *channel = _server.findChannel(*vec_iter);
 			if (channel) // 해당 채널을 찾음
 			{
+				if (command_vec.size() > 2 && checkBotCommand(command_vec[2]))
+				{
+					botCommand(fd, command_vec);
+					return;
+				}
 				std::string message = channelMessage(2, command_vec);
 				channelPRIVMSG(message, client_iter->second, channel);
 			}
@@ -272,6 +277,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		if (channel->getClientFdList().empty())
 		{
 			_server.removeChannel(channel->getChannelName());
+			delete channel->getBot();
 			delete channel;
 		}
 		else
@@ -312,6 +318,7 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			if (channel->getClientFdList().empty())
 			{
 				_server.removeChannel(channel->getChannelName());
+				delete channel->getBot();
 				delete channel;
 			}
 			else
@@ -440,11 +447,13 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		{
 			_server.appendNewChannel(*iter, fd);				// 서버에 채널을 추가 해준다.
 			_server.findChannel(*iter)->appendClientFdList(fd); // 해당 클라이언트를 채널에 넣어준다.
+			_server.findChannel(*iter)->appendClientFdList(-1);
 			client->appendChannelList(*iter);
 			msgToAllChannel(fd, *iter, "JOIN", "");
 			_server.findChannel(*iter)->setOperator(fd);
 		}
 		nameListMsg(fd, *iter);
+		msgToAllChannel(fd, *iter, "PRIVMSG", _server.findChannel(*iter)->getBot()->introduce());
 		iter++;
 	}
 }
@@ -557,4 +566,89 @@ void Command::nameListMsg(int fd, std::string channelName)
 	Client *client = _server.getClients().find(fd)->second;
 	client->appendClientRecvBuf("353 " + client->getNickname() + " = " + channelName + " :" + message + "\r\n");
 	client->appendClientRecvBuf("366 " + client->getNickname() + " " + channelName + " :End of NAMES list.\r\n");
+}
+
+void Command::botCommand(int fd, std::vector<std::string>command_vec)
+{
+	if (command_vec.size() < 3)
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		return;
+	}
+	Channel *channel = _server.findChannel(command_vec[1]);
+	if (command_vec.size() == 3)
+	{
+		msgToAllChannel(-1, channel->getChannelName(), "PRIVMSG", _server.findChannel(channel->getChannelName())->getBot()->introduce());
+		return;
+	}
+	if (channel == NULL)
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("403 " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+		return;
+	}
+	std::string command = command_vec[3];
+	Bot *bot = channel->getBot();
+	if (!strcmp(command.c_str(), "list"))
+	{
+		std::vector<std::string> bot_command = bot->listCommand();
+		std::vector<std::string>::iterator iter = bot_command.begin();
+		std::string message = "BOT COMMAND LIST : ";
+		while (iter != bot_command.end())
+		{
+			message += *iter;
+			if (iter != bot_command.end() - 1)
+				message += ", ";
+			iter++;
+		}
+		msgToAllChannel(-1, channel->getChannelName(), "PRIVMSG", message);
+	}
+	else if (strcmp(command.c_str(), "add") == 0)
+	{
+		if (command_vec.size() < 6)
+		{
+			_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+			_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+			return;
+		}
+		std::string commandName = command_vec[4];
+		std::string commandContent = command_vec[5];
+		bot->addCommand(commandName, commandContent);
+	}
+	else if (strcmp(command.c_str(), "del") == 0)
+	{
+		if (command_vec.size() < 5)
+		{
+			_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+			_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+			return;
+		}
+		std::string commandName = command_vec[4];
+		bot->delCommand(commandName);
+	}
+	else if (strcmp(command.c_str(), "do") == 0)
+	{
+		if (command_vec.size() < 5)
+		{
+			_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+			_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+			return;
+		}
+		std::string commandName = command_vec[4];
+		std::string response = bot->doCommand(commandName);
+		msgToAllChannel(-1, channel->getChannelName(), "PRIVMSG", response);
+	}
+	else
+	{
+		msgToAllChannel(-1, channel->getChannelName(), "PRIVMSG", "BOT COMMAND NOT FOUND");
+	}
+}
+
+bool Command::checkBotCommand(std::string command)
+{
+	if (command.length() < 4)
+		return false;
+	if (command.compare("@BOT"))
+		return true;
+	return false;
 }

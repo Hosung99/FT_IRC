@@ -16,6 +16,8 @@ public:
 	Server(char *, char *);
 	~Server();
 
+	Client *_bot;
+
 	/* member functions */
 	void run(void);
 	std::map<int, Client *> getClients(void);
@@ -62,6 +64,7 @@ private:
 	void addClient(int);
 	bool checkMessageEnds(int);
 	void doCommand(int);
+	void setBot();
 };
 
 #endif
