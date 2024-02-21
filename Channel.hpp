@@ -4,25 +4,46 @@
 #include "main.hpp"
 #include "Bot.hpp"
 
+#define INVITE 1
+#define TOPIC 2
+#define KEY 4
+#define LIMIT 8
+
 class Channel
 {
 private:
-	int _operatorFd;
 	Bot *_bot;
+	std::vector<int> _operatorFdList;
 	std::string _channelName;
 	std::vector<int> _clientFdList;
+	unsigned char _mode;
+	unsigned int _limit;
+
 public:
 	Channel(const std::string &channelName, int fd);
 	~Channel();
 	void setChannelName(std::string &channelName);
 	void appendClientFdList(int clientFd);
 	void removeClientFdList(int clientFd);
-	int getOperatorFd();
 	std::string getChannelName();
 	std::vector<int> getClientFdList();
 	std::vector<int>::iterator findMyClientIt(int fd);
 	bool checkClientInChannel(int fd);
-	void setOperator(int fd);
+
+	// operator
+	std::vector<int> getOperatorFdList();
+	void addOperatorFd(int fd);
+	void removeOperatorFd(int fd);
+	bool checkOperator(int fd);
+
+	// mode
+	void setMode(unsigned char mode, char sign);
+	std::string getMode();
+
+	// limit
+	void setLimit(unsigned int limit);
+	unsigned int getLimit();
+
 	Bot *getBot();
 };
 

@@ -3,7 +3,7 @@
 Channel::Channel(const std::string &channelName, int fd)
 {
 	this->_channelName = channelName;
-	this->_operatorFd = fd;
+	this->_operatorFdList.push_back(fd);
 	this->_bot = new Bot();
 }
 
@@ -29,9 +29,9 @@ void Channel::removeClientFdList(int client_fd)
 		this->_clientFdList.erase(it);
 }
 
-int Channel::getOperatorFd()
+std::vector<int> Channel::getOperatorFdList()
 {
-	return (this->_operatorFd);
+	return (this->_operatorFdList);
 }
 
 std::string Channel::getChannelName()
@@ -57,9 +57,56 @@ bool Channel::checkClientInChannel(int fd)
 	return (false);
 }
 
-void Channel::setOperator(int fd)
+void Channel::addOperatorFd(int fd)
 {
-	this->_operatorFd = fd;
+	if (std::find(this->_operatorFdList.begin(), this->_operatorFdList.end(), fd) == this->_operatorFdList.end())
+		this->_operatorFdList.push_back(fd);
+}
+
+bool Channel::checkOperator(int fd)
+{
+	if (std::find(this->_operatorFdList.begin(), this->_operatorFdList.end(), fd) != this->_operatorFdList.end())
+		return (true);
+	return (false);
+}
+
+void Channel::removeOperatorFd(int fd)
+{
+	std::vector<int>::iterator it = std::find(this->_operatorFdList.begin(), this->_operatorFdList.end(), fd);
+	if (it != this->_operatorFdList.end())
+		this->_operatorFdList.erase(it);
+}
+
+void Channel::setMode(unsigned char mode, char sign)
+{
+	if (sign == '+')
+		this->_mode |= mode;
+	else if (sign == '-')
+		this->_mode &= ~mode;
+}
+
+std::string Channel::getMode()
+{
+	std::string ret;
+	if (this->_mode & TOPIC)
+		ret += "t";
+	if (this->_mode & INVITE)
+		ret += "i";
+	if (this->_mode & LIMIT)
+		ret += "l";
+	if (this->_mode & KEY)
+		ret += "k";
+	return (ret);
+}
+
+void Channel::setLimit(unsigned int limit)
+{
+	this->_limit = limit;
+}
+
+unsigned int Channel::getLimit()
+{
+	return (this->_limit);
 }
 
 Bot *Channel::getBot()
