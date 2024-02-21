@@ -14,12 +14,12 @@ Client::~Client()
 	close(_clientFd);
 }
 
-void Client::set_nickname(std::string nickname)
+void Client::setNickname(std::string nickname)
 {
 	this->_nickName = nickname;
 }
 
-void Client::set_user(std::string username, std::string hostname, std::string servername, std::string realname)
+void Client::setUser(std::string username, std::string hostname, std::string servername, std::string realname)
 {
 	this->_userName = username;
 	this->_hostName = hostname;
@@ -27,97 +27,82 @@ void Client::set_user(std::string username, std::string hostname, std::string se
 	this->_realName = realname;
 }
 
-std::string Client::get_nickname()
+std::string Client::getNickname()
 {
 	return (this->_nickName);
 }
 
-std::string Client::get_username()
+std::string Client::getUsername()
 {
 	return (this->_userName);
 }
 
-std::string Client::get_hostname()
+std::string Client::getHostname()
 {
 	return (this->_hostName);
 }
 
-std::string Client::get_servername()
+std::string Client::getServername()
 {
 	return (this->_serverName);
 }
 
-std::string Client::get_realname()
+std::string Client::getRealname()
 {
 	return (this->_realName);
 }
 
-void Client::append_client_recv_buf(std::string client_recv_buf)
+void Client::appendClientRecvBuf(std::string client_recv_buf)
 {
 	this->_clientRecvBuf.append(client_recv_buf);
 }
 
-void Client::append_client_send_buf(std::string client_send_buf)
-{
-	this->_clientSendBuf.append(client_send_buf);
-}
-
-std::string Client::get_client_recv_buf()
+std::string Client::getClientRecvBuf()
 {
 	return (this->_clientRecvBuf);
 }
 
-std::string Client::get_client_send_buf()
-{
-	return (this->_clientSendBuf);
-}
-
-int Client::get_clientFd()
+int Client::getClientFd()
 {
 	return (this->_clientFd);
 }
 
-bool Client::get_pass_regist()
+bool Client::getPassRegist()
 {
 	return (this->_isRegistPass);
 }
 
-bool Client::get_nick_regist()
+bool Client::getNickRegist()
 {
 	return (this->_isRegistNick);
 }
 
-bool Client::get_user_regist()
+bool Client::getUserRegist()
 {
 	return (this->_isRegistUser);
 }
 
-void Client::set_pass_regist(bool is_regist_pass)
+void Client::setPassRegist(bool is_regist_pass)
 {
 	this->_isRegistPass = is_regist_pass;
 }
 
-void Client::set_nick_regist(bool is_regist_nick)
+void Client::setNickRegist(bool is_regist_nick)
 {
 	this->_isRegistNick = is_regist_nick;
 }
 
-void Client::set_user_regist(bool is_regist_user)
+void Client::setUserRegist(bool is_regist_user)
 {
 	this->_isRegistUser = is_regist_user;
 }
 
-void Client::clear_client_recv_buf()
+void Client::clearClientRecvBuf()
 {
 	this->_clientRecvBuf.clear();
 }
 
-void Client::clear_client_send_buf()
-{
-	this->_clientSendBuf.clear();
-}
-
-bool	Client::get_is_regist()
+bool Client::getIsRegist()
 {
 	return (_isRegistPass && _isRegistNick && _isRegistUser);
 }

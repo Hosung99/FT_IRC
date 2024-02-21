@@ -176,7 +176,7 @@ void Server::execute()
 						{
 							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
 							Client* client = _clients.find(_fds[i].fd)->second;
-							client->clear_client_recv_buf();
+							client->clearClientRecvBuf();
 							_clients.erase(_fds[i].fd);
 							close(_fds[i].fd);
 							delete client;
@@ -196,10 +196,10 @@ void Server::execute()
 			std::map<int, Client *>::iterator iter = _clients.begin();
 			for (; iter != _clients.end(); iter++)
 			{
-				if (iter->second->get_client_recv_buf().length() > 0)
+				if (iter->second->getClientRecvBuf().length() > 0)
 				{
-					send(iter->first, iter->second->get_client_recv_buf().c_str(), iter->second->get_client_recv_buf().length(), 0);
-					iter->second->clear_client_recv_buf();
+					send(iter->first, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
+					iter->second->clearClientRecvBuf();
 				}
 			}
 		}
@@ -223,7 +223,7 @@ Client *Server::findClient(std::string nickname)
 	std::map<int, Client *>::iterator iter = _clients.begin();
 	for (; iter != _clients.end(); iter++)
 	{
-		if (iter->second->get_nickname() == nickname)
+		if (iter->second->getNickname() == nickname)
 			return (iter->second);
 	}
 	return (NULL);
