@@ -99,6 +99,13 @@ std::string Channel::getMode()
 	return (ret);
 }
 
+bool Channel::checkMode(unsigned char mode)
+{
+	if (this->_mode & mode)
+		return (true);
+	return (false);
+}
+
 void Channel::setLimit(unsigned int limit)
 {
 	this->_limit = limit;

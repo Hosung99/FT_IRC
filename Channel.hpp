@@ -39,6 +39,7 @@ public:
 	// mode
 	void setMode(unsigned char mode, char sign);
 	std::string getMode();
+	bool checkMode(unsigned char mode);
 
 	// limit
 	void setLimit(unsigned int limit);
