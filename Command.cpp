@@ -472,7 +472,7 @@ std::string Command::makeFullName(int fd)
 	return (":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname());
 }
 
-void Command::c(int fd, std::string channelName)
+void Command::nameListMsg(int fd, std::string channelName)
 {
 	std::map<std::string, Channel *> channelList = _server.getChannelList();
 	if (channelList.find(channelName) == channelList.end())
