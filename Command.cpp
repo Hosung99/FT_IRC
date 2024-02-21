@@ -440,7 +440,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			client->appendChannelList(*iter);
 			msgToAllChannel(fd, *iter, "JOIN", "");
 		}
-
+		nameListMsg(fd, *iter);
 		iter++;
 	}
 }
@@ -470,4 +470,29 @@ std::string Command::makeFullName(int fd)
 	std::map<int, Client *>::iterator clientIt = clients.find(fd);
 	Client *client = clientIt->second;
 	return (":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname());
+}
+
+void Command::nameListMsg(int fd, std::string channelName)
+{
+	std::map<std::string, Channel *> channelList = _server.getChannelList();
+	if (channelList.find(channelName) == channelList.end())
+	{
+		// ERR_NOSUCHCHANNEL
+		return;
+	}
+	Channel *channel = channelList.find(channelName)->second;
+	std::vector<int> clientFdList = channel->getClientFdList();
+	std::vector<int>::iterator iter = clientFdList.begin();
+	std::string message;
+	while (iter != clientFdList.end())
+	{
+		Client *client = _server.getClients().find(*iter)->second;
+		message += client->get_nickname();
+		if (iter != clientFdList.end() - 1)
+			message += " ";
+		iter++;
+	}
+	Client *client = _server.getClients().find(fd)->second;
+	client->append_client_recv_buf("353 " + client->get_nickname() + " = " + channelName + " :" + message + "\r\n");
+	client->append_client_recv_buf("366 " + client->get_nickname() + " " + channelName + " :End of /NAMES list.\r\n");
 }
