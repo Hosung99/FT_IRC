@@ -27,17 +27,18 @@ public:
 
 	/* member functions */
 	void run(int);
-	void pass(int, std::vector<std::string> command_vec);
-	void nick(int, std::vector<std::string> command_vec);
-	void user(int, std::vector<std::string> command_vec);
-	void ping(int, std::vector<std::string> command_vec);
-	void privmsg(int, std::vector<std::string> command_vec);
-	void quit(int, std::vector<std::string> command_vec);
-	void part(int, std::vector<std::string> command_vec);
+	void pass(int fd, std::vector<std::string> command_vec);
+	void nick(int fd, std::vector<std::string> command_vec);
+	void user(int fd, std::vector<std::string> command_vec);
+	void ping(int fd, std::vector<std::string> command_vec);
+	void privmsg(int fd, std::vector<std::string> command_vec);
+	void quit(int fd, std::vector<std::string> command_vec);
+	void part(int fd, std::vector<std::string> command_vec);
+	void join(int fd, std::vector<std::string> command_vec);
+	void kick(int fd, std::vector<std::string> command_vec);
 	std::string channelMessage(int index, std::vector<std::string> command_vec);
 	void channelPRIVMSG(std::string message, Client *client, Channel *channel);
 	void channelPART(int, std::string channelName, std::vector<std::string> command_vec);
-	void join(int fd, std::vector<std::string> command_vec);
 	void msgToAllChannel(int target, std::string channelName, std::string command, std::string msg);
 	std::string makeFullName(int fd);
 	void nameListMsg(int fd, std::string channelName);
