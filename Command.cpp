@@ -127,7 +127,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		iter->second->appendClientRecvBuf(ERR_NONICKNAMEGIVEN);
 		return;
 	}
-	if (command_vec[1] == "user1")
+	if (command_vec[1] == "_")
 	{
 		while(1)
 		{
@@ -285,7 +285,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		channel->removeClientFdList(fd);
 		if (channel)
 		{
-			channelPART(fd, channel->getChannelName(), command_vec);
+			msgToAllChannel(fd, channel->getChannelName(), "QUIT", channelMessage(1, command_vec));
 		}
 		if (channel->getClientFdList().size() == 1)
 		{
