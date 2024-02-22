@@ -74,6 +74,8 @@ void Command::run(int fd)
 			mode(fd, command_vec);
 		else if (command_vec[0] == "TOPIC")
 			topic(fd, command_vec);
+		else if (command_vec[0] == "INVITE")
+			invite(fd, command_vec);
 	}
 }
 
@@ -439,22 +441,61 @@ void Command::channelPART(int fd, std::string channelName, std::vector<std::stri
 
 void Command::join(int fd, std::vector<std::string> command_vec)
 {
+	if (command_vec.size() < 2)
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		return;
+	}
 	std::vector<std::string> joinChannel = split(command_vec[1], ',');
 	std::vector<std::string>::iterator iter = joinChannel.begin();
+	std::vector<std::string> joinKey;
+	std::vector<std::string>::iterator keyIter;
+	if (command_vec.size() > 2)
+	{
+		joinKey = split(command_vec[2], ',');
+		keyIter = joinKey.begin();
+	}
 	std::map<int, Client *> clients = _server.getClients();
 	Client *client = clients.find(fd)->second;
 	while (iter != joinChannel.end())
 	{
-		if ((*iter)[0] != '#')
+		if ((*iter)[0] != '#' && (*iter)[0] != '&')
 		{
-			// ERR_NOSUCHCHANNEL
-			return;
+			client->appendClientRecvBuf("403 " + *iter + " :" + ERR_NOSUCHCHANNEL);
+			iter++;
+			if (command_vec.size() > 2 || keyIter != joinKey.end())
+				keyIter++;
+			continue;
 		}
 		std::map<std::string, Channel *> channelList = _server.getChannelList();
 		std::map<std::string, Channel *>::iterator channelIt = channelList.find(*iter);
 		if (channelIt != channelList.end()) // 채널이 있다면
 		{
 			// 해당 클라이언트를 채널에 넣어준다.
+			Channel *channel = channelIt->second;
+			if (channel->checkMode(INVITE)) // INVITE 모드가 켜져있다면
+			{
+				if (!channel->checkInvite(fd))
+				{
+					client->appendClientRecvBuf("473 " + client->getNickname() + " " + *iter + " :" + ERR_INVITEONLYCHAN);
+					iter++;
+					if (command_vec.size() > 2 || keyIter != joinKey.end())
+						keyIter++;
+					continue;
+				}
+			}
+			if (channel->checkMode(KEY)) // KEY 모드가 켜져있다면
+			{
+				if (command_vec.size() <= 2 || keyIter == joinKey.end() || !channel->checkKey(*keyIter)) // 인자에 키가 없거나 키가 틀리다면
+				{
+					client->appendClientRecvBuf("475 " + client->getNickname() + " " + *iter + " :" + ERR_BADCHANNELKEY);
+					iter++;
+					if (command_vec.size() > 2 || keyIter != joinKey.end())
+						keyIter++;
+					continue;
+				}
+			}
 			std::string channelName = (*channelIt).second->getChannelName();
 			(*channelIt).second->appendClientFdList(fd);
 			client->appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
@@ -473,6 +514,8 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		nameListMsg(fd, *iter);
 		msgToAllChannel(-1, *iter, "PRIVMSG", _server.findChannel(*iter)->getBot()->introduce());
 		iter++;
+		if (command_vec.size() > 2 || keyIter != joinKey.end())
+			keyIter++;
 	}
 }
 
@@ -585,6 +628,10 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 		else if (mode[i] == 'k')
 		{
 			channel->setMode(KEY, sign);
+			if (sign == '+')
+			{
+				channel->setKey(command_vec[3]);
+			}
 		}
 		else if (mode[i] == 'l')
 		{
@@ -853,4 +900,46 @@ void Command::topic(int fd, std::vector<std::string> command_vec)
 		}
 		msgToAllChannel(fd, command_vec[1], "TOPIC", channel->getTopic());
 	}
+}
+
+void Command::invite(int fd, std::vector<std::string> command_vec)
+{
+	// INVITE <nickname> <channel>
+	Client *client = _server.getClients().find(fd)->second;
+	if (command_vec.size() < 3)
+	{
+		client->appendClientRecvBuf("461 :");
+		client->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		return;
+	}
+	Client *target = _server.findClient(command_vec[1]);
+	if (target == NULL)
+	{
+		client->appendClientRecvBuf("401 " + client->getNickname() + " " +  command_vec[1] + " :" + ERR_NOSUCHNICK);
+		return;
+	}
+	Channel *channel = _server.findChannel(command_vec[2]);
+	if (channel == NULL)
+	{
+		client->appendClientRecvBuf("403 " + client->getNickname() + " " + command_vec[2] + " :" + ERR_NOSUCHCHANNEL);
+		return;
+	}
+	if (!channel->checkClientInChannel(client->getClientFd()))
+	{
+		client->appendClientRecvBuf("442 " + client->getNickname() + " " + command_vec[2] + " :" + ERR_NOTONCHANNEL);
+		return;
+	}
+	if (!channel->checkOperator(client->getClientFd()))
+	{
+		client->appendClientRecvBuf("482 " + client->getNickname() + " " + command_vec[2] + " :" + ERR_CHANOPRIVSNEEDED);
+		return;
+	}
+	if (channel->checkClientInChannel(target->getClientFd()))
+	{
+		client->appendClientRecvBuf("443 " + client->getNickname() + " " + command_vec[1] + " " + command_vec[2] + " :" + ERR_USERONCHANNEL);
+		return;
+	}
+	target->appendClientRecvBuf(":" + client->getNickname() + " INVITE " + target->getNickname() + " " + command_vec[2] + "\r\n");
+	client->appendClientRecvBuf("341 " + client->getNickname() + " " + command_vec[1] + " " + command_vec[2] + " :" + RPL_INVITING);
+	channel->appendInviteFdList(target->getClientFd());
 }

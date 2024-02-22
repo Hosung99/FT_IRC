@@ -130,3 +130,28 @@ std::string Channel::getTopic()
 {
 	return (this->_topic);
 }
+
+void Channel::appendInviteFdList(int fd)
+{
+	if (std::find(this->_inviteFdList.begin(), this->_inviteFdList.end(), fd) == this->_inviteFdList.end())
+		this->_inviteFdList.push_back(fd);
+}
+
+bool Channel::checkInvite(int fd)
+{
+	if (std::find(this->_inviteFdList.begin(), this->_inviteFdList.end(), fd) != this->_inviteFdList.end())
+		return (true);
+	return (false);
+}
+
+void Channel::setKey(std::string key)
+{
+	this->_key = key;
+}
+
+bool Channel::checkKey(std::string key)
+{
+	if (this->_key == key)
+		return (true);
+	return (false);
+}
