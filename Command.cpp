@@ -84,7 +84,7 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 	std::string password = _server.getPassword();
 	if (iter->second->getPassRegist())
 	{
-		iter->second->appendClientRecvBuf("462 :");
+		iter->second->appendClientRecvBuf("462 : ");
 		iter->second->appendClientRecvBuf(ERR_ALREADYREGIST);
 		return;
 	}
@@ -127,11 +127,15 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		iter->second->appendClientRecvBuf(ERR_NONICKNAMEGIVEN);
 		return;
 	}
-	if (!strcmp(command_vec[1].c_str(), "_"))
+	if (command_vec[1] == "user1")
 	{
-		if (_server.findClient(command_vec[1]) != NULL)
+		while(1)
 		{
-			command_vec[1] += "_";
+			Client *client = _server.findClient(command_vec[1]);
+			if (client != NULL)
+				command_vec[1] = client->getNickname() + "_";
+			else
+				break ;
 		}
 	}
 	if (!checkNicknameValidate(command_vec[1]))
@@ -168,7 +172,7 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	if (iter->second->getUserRegist())
 	{
-		iter->second->appendClientRecvBuf("462 :");
+		iter->second->appendClientRecvBuf("462 : ");
 		iter->second->appendClientRecvBuf(ERR_ALREADYREGIST);
 		return;
 	}
@@ -286,7 +290,6 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		if (channel->getClientFdList().size() == 1)
 		{
 			_server.removeChannel(channel->getChannelName());
-			delete channel->getBot();
 			delete channel;
 		}
 		else
@@ -327,12 +330,14 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			if (channel->getClientFdList().size() == 1)
 			{
 				_server.removeChannel(channel->getChannelName());
-				delete channel->getBot();
 				delete channel;
 			}
 			else
 			{
-				channel->addOperatorFd(channel->getClientFdList().at(1));
+				std::vector<int> fdList = channel->getClientFdList();
+				std::vector<int>::iterator fd_iter = fdList.begin();
+				fd_iter++;
+				channel->addOperatorFd(*fd_iter);
 			}
 		}
 		else
@@ -357,7 +362,7 @@ bool Command::checkNicknameValidate(std::string nickname)
 		return (false);
 	for (size_t i = 1; i < nickname.length(); i++)
 	{
-		if (!isalnum(nickname[i]) && isspecial(nickname[i]))
+		if (!isalnum(nickname[i]) && !isspecial(nickname[i]))
 			return (false);
 	}
 	return (true);
@@ -369,7 +374,9 @@ bool Command::checkNicknameDuplicate(std::string nickname, std::map<int, Client 
 	for (; iter != Clients.end(); iter++)
 	{
 		if (iter->second->getNickname() == nickname)
+		{
 			return (false);
+		}
 	}
 	return (true);
 }
