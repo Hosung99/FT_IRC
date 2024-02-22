@@ -40,4 +40,9 @@
 // COMMON
 #define ERR_NOTREGISTERED "You have not registered\r\n"
 
+// MODE
+#define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag\r\n"
+#define ERR_USERSDONTMATCH "Can't change mode for other users\r\n"
+#define ERR_UNKNOWNMODE "is unknown mode char to me\r\n"
+
 #endif

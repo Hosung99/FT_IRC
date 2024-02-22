@@ -36,6 +36,8 @@ public:
 	void part(int fd, std::vector<std::string> command_vec);
 	void join(int fd, std::vector<std::string> command_vec);
 	void kick(int fd, std::vector<std::string> command_vec);
+	void mode(int fd, std::vector<std::string> command_vec);
+
 	void botCommand(int fd, std::vector<std::string> command_vec);
 	std::string channelMessage(int index, std::vector<std::string> command_vec);
 	void channelPRIVMSG(std::string message, Client *client, Channel *channel);
