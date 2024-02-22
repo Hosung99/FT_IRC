@@ -10,7 +10,7 @@ Bot::~Bot()
 
 std::string Bot::introduce()
 {
-	return "안녕하세요! @BOT + 명령어로 명령실행이 가능합니다. \t # 사용가능한 명령어 리스트보기 : list#  # \t 명령어 추가하기 : add + 명령어 이름 + 명령 내용# \t # 명령어 삭제하기 : del + 명령어 이름# \t # 명령어 실행하기 : do + 명령어 이름# ";
+	return "안녕하세요! \t @BOT + 명령어로 명령실행이 가능합니다. \t # 사용가능한 명령어 리스트보기 : list#  # \t 명령어 추가하기 : add + 명령어 이름 + 명령 내용# \t # 명령어 삭제하기 : del + 명령어 이름# \t # 명령어 실행하기 : do + 명령어 이름# ";
 }
 
 void Bot::addCommand(std::string command, std::string response)

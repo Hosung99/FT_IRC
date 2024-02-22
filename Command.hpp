@@ -37,6 +37,7 @@ public:
 	void join(int fd, std::vector<std::string> command_vec);
 	void kick(int fd, std::vector<std::string> command_vec);
 	void mode(int fd, std::vector<std::string> command_vec);
+	void topic(int fd, std::vector<std::string> command_vec);
 
 	void botCommand(int fd, std::vector<std::string> command_vec);
 	std::string channelMessage(int index, std::vector<std::string> command_vec);
@@ -45,6 +46,7 @@ public:
 	void msgToAllChannel(int target, std::string channelName, std::string command, std::string msg);
 	std::string makeFullName(int fd);
 	void nameListMsg(int fd, std::string channelName);
+	void topicMsg(int fd, std::string channelName);
 	bool checkNicknameDuplicate(std::string, std::map<int, Client *>);
 	bool checkNicknameValidate(std::string);
 	bool checkRealname(std::string);

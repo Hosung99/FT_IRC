@@ -120,3 +120,13 @@ Bot *Channel::getBot()
 {
 	return (this->_bot);
 }
+
+void Channel::setTopic(std::string topic)
+{
+	this->_topic = topic;
+}
+
+std::string Channel::getTopic()
+{
+	return (this->_topic);
+}

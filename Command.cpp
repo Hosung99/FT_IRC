@@ -5,7 +5,7 @@ Command::~Command() {}
 
 static bool isspecial(char c)
 {
-	if (c == '[' || c == ']' || c == '{' || c == '}' || c == '\\' || c == '|')
+	if (c == '[' || c == ']' || c == '{' || c == '}' || c == '\\' || c == '|' || c == '_')
 		return (true);
 	return (false);
 }
@@ -72,14 +72,8 @@ void Command::run(int fd)
 			kick(fd, command_vec);
 		else if (command_vec[0] == "MODE")
 			mode(fd, command_vec);
-		// else
-		// {
-		// 	iter->second->appendClientRecvBuf(iter->second->getNickname() + " :");
-		// 	iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
-		// 	clients.erase(fd);
-		// 	close(fd);
-		// 	delete iter->second;
-		// }
+		else if (command_vec[0] == "TOPIC")
+			topic(fd, command_vec);
 	}
 }
 
@@ -133,6 +127,13 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		iter->second->appendClientRecvBuf(ERR_NONICKNAMEGIVEN);
 		return;
 	}
+	if (!strcmp(command_vec[1].c_str(), "_"))
+	{
+		if (_server.findClient(command_vec[1]) != NULL)
+		{
+			command_vec[1] += "_";
+		}
+	}
 	if (!checkNicknameValidate(command_vec[1]))
 	{
 		iter->second->appendClientRecvBuf("432 :");
@@ -147,12 +148,18 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		return;
 	}
 	std::string old_nickname = iter->second->getNickname();
-	iter->second->setNickname(command_vec[1]);
 	if (old_nickname == "Client")
 		old_nickname = iter->second->getNickname();
+	std::vector<std::string> channelList = iter->second->getChannelList();
+	std::vector<std::string>::iterator channel_iter = channelList.begin();
+	for (; channel_iter != channelList.end(); channel_iter++)
+	{
+		Channel *channel = _server.findChannel(*channel_iter);
+		msgToAllChannel(fd, channel->getChannelName(), "NICK", old_nickname + " " + command_vec[1]);
+	}
+	iter->second->setNickname(command_vec[1]);
 	iter->second->appendClientRecvBuf(":" + old_nickname + " NICK " + iter->second->getNickname() + "\r\n");
 	iter->second->setNickRegist(true);
-	// + 해당 클라이언트가 속한 모든 채널을 돌며 닉네임을 바꾸었다고 알려준다.
 }
 
 void Command::user(int fd, std::vector<std::string> command_vec)
@@ -276,7 +283,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		{
 			channelPART(fd, channel->getChannelName(), command_vec);
 		}
-		if (channel->getClientFdList().empty())
+		if (channel->getClientFdList().size() == 1)
 		{
 			_server.removeChannel(channel->getChannelName());
 			delete channel->getBot();
@@ -284,7 +291,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		}
 		else
 		{
-			channel->addOperatorFd(channel->getClientFdList().front());
+			channel->addOperatorFd(channel->getClientFdList().at(1));
 		}
 	}
 	clients.erase(fd);
@@ -317,7 +324,7 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			msgToAllChannel(fd, *vec_iter, "PART", channelMessage(2, command_vec));
 			channel->removeClientFdList(fd);
 			client_iter->second->removeChannel(*channelList);
-			if (channel->getClientFdList().empty())
+			if (channel->getClientFdList().size() == 1)
 			{
 				_server.removeChannel(channel->getChannelName());
 				delete channel->getBot();
@@ -325,7 +332,7 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			}
 			else
 			{
-				channel->addOperatorFd(channel->getClientFdList().front());
+				channel->addOperatorFd(channel->getClientFdList().at(1));
 			}
 		}
 		else
@@ -444,6 +451,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			(*channelIt).second->appendClientFdList(fd);
 			client->appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
 			msgToAllChannel(fd, channelName, "JOIN", ""); // 채널에 JOIN 메시지를 보내준다.
+			topicMsg(fd, channelName);
 		}
 		else // 채널이 없다면
 		{
@@ -455,7 +463,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			_server.findChannel(*iter)->addOperatorFd(fd);
 		}
 		nameListMsg(fd, *iter);
-		msgToAllChannel(fd, *iter, "PRIVMSG", _server.findChannel(*iter)->getBot()->introduce());
+		msgToAllChannel(-1, *iter, "PRIVMSG", _server.findChannel(*iter)->getBot()->introduce());
 		iter++;
 	}
 }
@@ -493,7 +501,7 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 			Client *target = _server.findClient(command_vec[2]);
 			if (target->getNickname() == client_iter->second->getNickname())
 			{
-				return ;
+				return;
 			}
 			if (target == NULL)
 			{
@@ -518,7 +526,7 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 
 void Command::mode(int fd, std::vector<std::string> command_vec)
 {
-	//parsing
+	// parsing
 	Client *client = _server.getClients().find(fd)->second;
 	if (command_vec.size() < 2)
 	{
@@ -584,17 +592,20 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 			if (target == NULL) // 해당 클라이언트가 서버에 없을때
 			{
 				client->appendClientRecvBuf("401 " + client->getNickname() + " " + command_vec[3] + " :" + ERR_NOSUCHNICK);
-				return ;
-			} else // 클라이언트가 서버에는 있음
+				return;
+			}
+			else // 클라이언트가 서버에는 있음
 			{
 				if (!channel->checkClientInChannel(target->getClientFd())) // 채널에는 없음
 				{
 					client->appendClientRecvBuf("441 " + command_vec[3] + " " + command_vec[1] + " :" + ERR_USERNOTINCHANNEL);
-					return ;
-				} else if (sign == '+') // 오퍼레이터 추가
+					return;
+				}
+				else if (sign == '+') // 오퍼레이터 추가
 				{
 					channel->addOperatorFd(target->getClientFd());
-				} else if (sign == '-') // 오퍼레이터 삭제
+				}
+				else if (sign == '-') // 오퍼레이터 삭제
 				{
 					channel->removeOperatorFd(target->getClientFd());
 				}
@@ -604,7 +615,7 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 		{
 			// ERR_UNKNOWNMODE
 			client->appendClientRecvBuf("472 " + client->getNickname() + " " + mode[i] + " :" + ERR_UNKNOWNMODE);
-			continue ;
+			continue;
 		}
 		msg += mode[i];
 		if (command_vec.size() > 3)
@@ -643,6 +654,20 @@ std::string Command::makeFullName(int fd)
 	return temp;
 }
 
+void Command::topicMsg(int fd, std::string channelName)
+{
+	std::map<std::string, Channel *> channelList = _server.getChannelList();
+	Channel *channel = channelList.find(channelName)->second;
+	std::string topic = channel->getTopic();
+	if (topic.length() == 0)
+	{
+		return;
+	}
+	topic = topic.substr(1, topic.length() - 1);
+	Client *client = _server.getClients().find(fd)->second;
+	client->appendClientRecvBuf("332 " + client->getNickname() + " " + channelName + " :" + topic + "\r\n");
+}
+
 void Command::nameListMsg(int fd, std::string channelName)
 {
 	std::map<std::string, Channel *> channelList = _server.getChannelList();
@@ -670,7 +695,7 @@ void Command::nameListMsg(int fd, std::string channelName)
 	client->appendClientRecvBuf("366 " + client->getNickname() + " " + channelName + " :End of NAMES list.\r\n");
 }
 
-void Command::botCommand(int fd, std::vector<std::string>command_vec)
+void Command::botCommand(int fd, std::vector<std::string> command_vec)
 {
 	if (command_vec.size() < 3)
 	{
@@ -748,9 +773,76 @@ void Command::botCommand(int fd, std::vector<std::string>command_vec)
 
 bool Command::checkBotCommand(std::string command)
 {
-	if (command.length() < 4)
-		return false;
-	if (command.compare("@BOT"))
+	if (!strcmp(command.c_str(), ":@BOT"))
 		return true;
 	return false;
+}
+
+void Command::topic(int fd, std::vector<std::string> command_vec)
+{
+	if (command_vec.size() < 2)
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		return;
+	}
+	Channel *channel = _server.findChannel(command_vec[1]);
+	if (channel == NULL)
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("403 " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+		return;
+	}
+	std::vector<int> clientFdList = channel->getClientFdList();
+	std::vector<int>::iterator iter = clientFdList.begin();
+	for (; iter != clientFdList.end(); iter++)
+	{
+		if (*iter == fd)
+		{
+			break;
+		}
+	}
+	if (iter == clientFdList.end())
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("442 " + command_vec[1] + " :" + ERR_NOTONCHANNEL);
+		return;
+	}
+	if (channel->checkMode(TOPIC))
+	{
+		if (channel->checkOperator(fd) == false)
+		{
+			_server.getClients().find(fd)->second->appendClientRecvBuf("482 " + _server.getClients().find(fd)->second->getNickname() + " " + command_vec[1] + " :" + ERR_CHANOPRIVSNEEDED);
+			return;
+		}
+	}
+	if (command_vec.size() == 2)
+	{
+		if (channel == NULL)
+		{
+			_server.getClients().find(fd)->second->appendClientRecvBuf("403 " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+			return;
+		}
+		if (channel->getTopic().length() == 0)
+		{
+			_server.getClients().find(fd)->second->appendClientRecvBuf("331 " + _server.getClients().find(fd)->second->getNickname() + " " + command_vec[1] + " :" + RPL_NOTOPIC);
+			return;
+		}
+		_server.getClients().find(fd)->second->appendClientRecvBuf("332 " + _server.getClients().find(fd)->second->getNickname() + " " + command_vec[1] + " :" + channel->getTopic() + "\r\n");
+	}
+	else
+	{
+		if (command_vec[2] == ":")
+		{
+			channel->setTopic("");
+		}
+		else
+		{
+			std::string topic = command_vec[2];
+			for (size_t i = 3; i < command_vec.size(); i++)
+			{
+				topic += " " + command_vec[i];
+			}
+			channel->setTopic(topic);
+		}
+		msgToAllChannel(fd, command_vec[1], "TOPIC", channel->getTopic());
+	}
 }
