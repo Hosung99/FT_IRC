@@ -441,22 +441,61 @@ void Command::channelPART(int fd, std::string channelName, std::vector<std::stri
 
 void Command::join(int fd, std::vector<std::string> command_vec)
 {
+	if (command_vec.size() < 2)
+	{
+		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
+		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		return;
+	}
 	std::vector<std::string> joinChannel = split(command_vec[1], ',');
 	std::vector<std::string>::iterator iter = joinChannel.begin();
+	std::vector<std::string> joinKey;
+	std::vector<std::string>::iterator keyIter;
+	if (command_vec.size() > 2)
+	{
+		joinKey = split(command_vec[2], ',');
+		keyIter = joinKey.begin();
+	}
 	std::map<int, Client *> clients = _server.getClients();
 	Client *client = clients.find(fd)->second;
 	while (iter != joinChannel.end())
 	{
-		if ((*iter)[0] != '#')
+		if ((*iter)[0] != '#' && (*iter)[0] != '&')
 		{
-			// ERR_NOSUCHCHANNEL
-			return;
+			client->appendClientRecvBuf("403 " + *iter + " :" + ERR_NOSUCHCHANNEL);
+			iter++;
+			if (command_vec.size() > 2 || keyIter != joinKey.end())
+				keyIter++;
+			continue;
 		}
 		std::map<std::string, Channel *> channelList = _server.getChannelList();
 		std::map<std::string, Channel *>::iterator channelIt = channelList.find(*iter);
 		if (channelIt != channelList.end()) // 채널이 있다면
 		{
 			// 해당 클라이언트를 채널에 넣어준다.
+			Channel *channel = channelIt->second;
+			if (channel->checkMode(INVITE)) // INVITE 모드가 켜져있다면
+			{
+				if (!channel->checkInvite(fd))
+				{
+					client->appendClientRecvBuf("473 " + client->getNickname() + " " + *iter + " :" + ERR_INVITEONLYCHAN);
+					iter++;
+					if (command_vec.size() > 2 || keyIter != joinKey.end())
+						keyIter++;
+					continue;
+				}
+			}
+			if (channel->checkMode(KEY)) // KEY 모드가 켜져있다면
+			{
+				if (command_vec.size() <= 2 || keyIter == joinKey.end() || !channel->checkKey(*keyIter)) // 인자에 키가 없거나 키가 틀리다면
+				{
+					client->appendClientRecvBuf("475 " + client->getNickname() + " " + *iter + " :" + ERR_BADCHANNELKEY);
+					iter++;
+					if (command_vec.size() > 2 || keyIter != joinKey.end())
+						keyIter++;
+					continue;
+				}
+			}
 			std::string channelName = (*channelIt).second->getChannelName();
 			(*channelIt).second->appendClientFdList(fd);
 			client->appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
@@ -475,6 +514,8 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		nameListMsg(fd, *iter);
 		msgToAllChannel(-1, *iter, "PRIVMSG", _server.findChannel(*iter)->getBot()->introduce());
 		iter++;
+		if (command_vec.size() > 2 || keyIter != joinKey.end())
+			keyIter++;
 	}
 }
 
@@ -587,6 +628,10 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 		else if (mode[i] == 'k')
 		{
 			channel->setMode(KEY, sign);
+			if (sign == '+')
+			{
+				channel->setKey(command_vec[3]);
+			}
 		}
 		else if (mode[i] == 'l')
 		{

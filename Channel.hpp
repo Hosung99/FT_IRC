@@ -18,6 +18,7 @@ private:
 	std::vector<int> _clientFdList;
 	std::vector<int> _inviteFdList;
 	std::string _topic;
+	std::string _key;
 	unsigned char _mode;
 	unsigned int _limit;
 public:
@@ -53,6 +54,10 @@ public:
 	// invite
 	void appendInviteFdList(int fd);
 	bool checkInvite(int fd);
+
+	// key
+	void setKey(std::string key);
+	bool checkKey(std::string key);
 
 	Bot *getBot();
 };

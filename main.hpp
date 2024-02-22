@@ -45,6 +45,10 @@
 #define ERR_USERSDONTMATCH "Can't change mode for other users\r\n"
 #define ERR_UNKNOWNMODE "is unknown mode char to me\r\n"
 
+// JOIN
+#define ERR_INVITEONLYCHAN "Cannot join channel (+i)\r\n"
+#define ERR_BADCHANNELKEY "Cannot join channel (+k)\r\n"
+
 // TOPIC
 #define RPL_NOTOPIC "No topic is set\r\n"
 

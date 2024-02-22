@@ -143,3 +143,15 @@ bool Channel::checkInvite(int fd)
 		return (true);
 	return (false);
 }
+
+void Channel::setKey(std::string key)
+{
+	this->_key = key;
+}
+
+bool Channel::checkKey(std::string key)
+{
+	if (this->_key == key)
+		return (true);
+	return (false);
+}
