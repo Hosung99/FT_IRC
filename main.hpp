@@ -45,4 +45,7 @@
 #define ERR_USERSDONTMATCH "Can't change mode for other users\r\n"
 #define ERR_UNKNOWNMODE "is unknown mode char to me\r\n"
 
+// TOPIC
+#define RPL_NOTOPIC "No topic is set\r\n"
+
 #endif

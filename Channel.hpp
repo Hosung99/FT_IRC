@@ -16,9 +16,9 @@ private:
 	std::vector<int> _operatorFdList;
 	std::string _channelName;
 	std::vector<int> _clientFdList;
+	std::string _topic;
 	unsigned char _mode;
 	unsigned int _limit;
-
 public:
 	Channel(const std::string &channelName, int fd);
 	~Channel();
@@ -44,6 +44,10 @@ public:
 	// limit
 	void setLimit(unsigned int limit);
 	unsigned int getLimit();
+
+	// topic
+	void setTopic(std::string topic);
+	std::string getTopic();
 
 	Bot *getBot();
 };
