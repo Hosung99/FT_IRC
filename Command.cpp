@@ -297,6 +297,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 			channel->addOperatorFd(channel->getClientFdList().at(1));
 		}
 	}
+	client_iter->second->setRegist(false);
 	clients.erase(fd);
 	close(fd);
 	delete client_iter->second;

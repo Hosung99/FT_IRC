@@ -45,6 +45,7 @@ public:
 	void setPassRegist(bool);
 	void setNickRegist(bool);
 	void setUserRegist(bool);
+	void setRegist(bool);
 	int getClientFd();
 
 	std::vector<std::string> &getChannelList();
