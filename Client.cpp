@@ -151,3 +151,10 @@ void Client::makeClientToBot()
 	this->_isRegistNick = true;
 	this->_isRegistUser = true;
 }
+
+void Client::setRegist(bool isRegist)
+{
+	this->_isRegistPass = isRegist;
+	this->_isRegistNick = isRegist;
+	this->_isRegistUser = isRegist;
+}
