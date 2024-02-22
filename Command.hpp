@@ -38,6 +38,7 @@ public:
 	void kick(int fd, std::vector<std::string> command_vec);
 	void mode(int fd, std::vector<std::string> command_vec);
 	void topic(int fd, std::vector<std::string> command_vec);
+	void invite(int fd, std::vector<std::string> command_vec);
 
 	void botCommand(int fd, std::vector<std::string> command_vec);
 	std::string channelMessage(int index, std::vector<std::string> command_vec);

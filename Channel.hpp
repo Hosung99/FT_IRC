@@ -16,6 +16,7 @@ private:
 	std::vector<int> _operatorFdList;
 	std::string _channelName;
 	std::vector<int> _clientFdList;
+	std::vector<int> _inviteFdList;
 	std::string _topic;
 	unsigned char _mode;
 	unsigned int _limit;
@@ -48,6 +49,10 @@ public:
 	// topic
 	void setTopic(std::string topic);
 	std::string getTopic();
+
+	// invite
+	void appendInviteFdList(int fd);
+	bool checkInvite(int fd);
 
 	Bot *getBot();
 };

@@ -48,4 +48,8 @@
 // TOPIC
 #define RPL_NOTOPIC "No topic is set\r\n"
 
+// INVITE
+#define ERR_USERONCHANNEL "is already on channel\r\n"
+#define RPL_INVITING "Inviting\r\n"
+
 #endif
