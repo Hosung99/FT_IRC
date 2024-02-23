@@ -43,8 +43,8 @@ void Command::run(int fd)
 			iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
 			clients.erase(fd);
 			close(fd);
-			delete iter->second;
 		}
+		iter = clients.find(fd);
 		if (iter->second && iter->second->getIsRegist())
 		{
 			iter->second->appendClientRecvBuf(":IRC 001 " + iter->second->getNickname() + " :Welcome to the Interget Relay Network " + iter->second->getNickname() + "!" + iter->second->getUsername() + "@" + iter->second->getHostname() + "\r\n");
@@ -103,7 +103,6 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		clients.erase(fd);
 		close(fd);
-		delete iter->second;
 		return;
 	}
 	iter->second->setPassRegist(true);
@@ -120,7 +119,6 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		clients.erase(fd);
 		close(fd);
-		delete iter->second;
 		return;
 	}
 	if (command_vec.size() < 2)
@@ -186,7 +184,6 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		clients.erase(fd);
 		close(fd);
-		delete iter->second;
 		return;
 	}
 	if (command_vec.size() < 5 || !checkRealname(command_vec[4]))
@@ -305,7 +302,6 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 	client_iter->second->setRegist(false);
 	clients.erase(fd);
 	close(fd);
-	delete client_iter->second;
 }
 
 void Command::part(int fd, std::vector<std::string> command_vec)
