@@ -406,6 +406,8 @@ std::string Command::channelMessage(int index, std::vector<std::string> command_
 		if (i != command_vec.size() - 1)
 			message += " ";
 	}
+	if (message[0] == ':')
+		message = message.substr(1, message.length() - 1);
 	if (message.length() == 0)
 		message = "NO REASON";
 	return (message);
