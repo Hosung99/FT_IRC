@@ -329,6 +329,7 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			Channel *channel = _server.findChannel(*channelList);
 			msgToAllChannel(fd, *vec_iter, "PART", channelMessage(2, command_vec));
 			channel->removeClientFdList(fd);
+			channel->removeOperatorFd(fd);
 			client_iter->second->removeChannel(*channelList);
 			if (channel->getClientFdList().size() == 1)
 			{
