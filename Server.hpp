@@ -20,7 +20,7 @@ public:
 
 	/* member functions */
 	void run(void);
-	std::map<int, Client *> getClients(void);
+	std::map<int, Client *>& getClients(void);
 	std::string getPassword(void);
 	std::string getMessage(int);
 	std::map<std::string, Channel *> getChannelList(void);

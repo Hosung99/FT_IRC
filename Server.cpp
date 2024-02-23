@@ -110,7 +110,7 @@ int Server::getServerSock()
 	return (this->_serverSock);
 }
 
-std::map<int, Client *> Server::getClients()
+std::map<int, Client *>& Server::getClients()
 {
 	return (this->_clients);
 }
