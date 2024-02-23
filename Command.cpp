@@ -260,9 +260,8 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 		}
 		else
 		{
-			// 유저에게 메시지를 보낸다
 			Client *client = _server.findClient(*vec_iter);
-			if (client) // 해당 유저를 찾음
+			if (client)
 			{
 				std::string message = channelMessage(2, command_vec);
 				client->appendClientRecvBuf(":" + client_iter->second->getNickname() + " PRIVMSG " + client->getNickname() + " :" + message + "\r\n");
@@ -285,6 +284,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 	{
 		Channel *channel = _server.findChannel(*channel_iter);
 		channel->removeClientFdList(fd);
+		channel->removeOperatorFd(fd);
 		if (channel)
 		{
 			msgToAllChannel(fd, channel->getChannelName(), "QUIT", channelMessage(1, command_vec));
@@ -296,7 +296,10 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		}
 		else
 		{
-			channel->addOperatorFd(channel->getClientFdList().at(1));
+			std::vector<int> fdList = channel->getClientFdList();
+			std::vector<int>::iterator fd_iter = fdList.begin();
+			fd_iter++;
+			channel->addOperatorFd(*fd_iter);
 		}
 	}
 	client_iter->second->setRegist(false);
@@ -329,6 +332,7 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			Channel *channel = _server.findChannel(*channelList);
 			msgToAllChannel(fd, *vec_iter, "PART", channelMessage(2, command_vec));
 			channel->removeClientFdList(fd);
+			channel->removeOperatorFd(fd);
 			client_iter->second->removeChannel(*channelList);
 			if (channel->getClientFdList().size() == 1)
 			{
