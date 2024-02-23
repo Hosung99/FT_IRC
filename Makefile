@@ -1,6 +1,6 @@
 CPP = c++
 CFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
-NAME = ./ircserv
+NAME = ircserv
 SRCS = main.cpp Server.cpp Client.cpp Command.cpp Util.cpp Channel.cpp Bot.cpp
 HEADS = main.hpp Server.hpp Client.hpp Command.hpp Util.hpp Channel.hpp Bot.hpp
 OBJS = $(SRCS:.cpp=.o)
@@ -20,6 +20,8 @@ fclean: clean
 	rm -f $(OBJS)
 	rm -f $(NAME)
 
-re: fclean all
+re:
+	$(MAKE) fclean
+	$(MAKE) all
 
 .PHONY: all clean fclean re
