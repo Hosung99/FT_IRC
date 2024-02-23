@@ -1,5 +1,5 @@
 CPP = c++
-CFLAGS = -Wall -Werror -Wextra -std=c++98
+CFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address -g
 NAME = ./ircserv
 SRCS = main.cpp Server.cpp Client.cpp Command.cpp Util.cpp Channel.cpp Bot.cpp
 HEADS = main.hpp Server.hpp Client.hpp Command.hpp Util.hpp Channel.hpp Bot.hpp
@@ -8,10 +8,10 @@ OBJS = $(SRCS:.cpp=.o)
 all: $(NAME)
 
 %.o : %.cpp
-	$(CPP) $(CFLAGS) -c $^ -o $@
+	$(CPP) $(CFLAGS) -c $< -o $@
 
 $(NAME): $(OBJS) $(HEADS)
-	$(CPP) -o $@ $(OBJS)
+	$(CPP) $(CFLAGS) $(OBJS) -o $(NAME)
 
 clean:
 	rm -f $(OBJS)
