@@ -5,6 +5,7 @@ Channel::Channel(const std::string &channelName, int fd)
 	this->_channelName = channelName;
 	this->_operatorFdList.push_back(fd);
 	this->_bot = new Bot();
+	this->_mode = 0;
 }
 
 Channel::~Channel()

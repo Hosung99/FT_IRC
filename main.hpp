@@ -44,6 +44,7 @@
 #define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag\r\n"
 #define ERR_USERSDONTMATCH "Can't change mode for other users\r\n"
 #define ERR_UNKNOWNMODE "is unknown mode char to me\r\n"
+#define ERR_CHANNELISFULL "Cannot join channel (+l)\r\n"
 
 // JOIN
 #define ERR_INVITEONLYCHAN "Cannot join channel (+i)\r\n"
