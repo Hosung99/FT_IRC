@@ -542,7 +542,8 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 	while (getline(iss, buffer, ','))
 		vec.push_back(buffer);
 	std::vector<std::string>::iterator vec_iter = vec.begin();
-	if (!_server.findChannel(*vec_iter)->checkOperator(fd))
+	Channel *channel = _server.findChannel(*vec_iter);
+	if (channel && !channel->checkOperator(fd))
 	{
 		client_iter->second->appendClientRecvBuf("482 " + *vec_iter + " :" + ERR_CHANOPRIVSNEEDED);
 		return;
@@ -557,13 +558,13 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 		else
 		{
 			Client *target = _server.findClient(command_vec[2]);
-			if (target->getNickname() == client_iter->second->getNickname())
-			{
-				return;
-			}
 			if (target == NULL)
 			{
 				client_iter->second->appendClientRecvBuf("401 " + command_vec[2] + " :" + ERR_NOSUCHNICK);
+			}
+			if (target->getNickname() == client_iter->second->getNickname())
+			{
+				return;
 			}
 			else
 			{
