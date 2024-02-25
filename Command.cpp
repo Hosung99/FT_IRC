@@ -503,6 +503,17 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 					continue;
 				}
 			}
+			if (channel->checkMode(LIMIT)) // LIMIT 모드가 켜져있다면
+			{
+				if (channel->getClientFdList().size() >= channel->getLimit())
+				{
+					client->appendClientRecvBuf("471 " + client->getNickname() + " " + *iter + " :" + ERR_CHANNELISFULL);
+					iter++;
+					if (command_vec.size() > 2 || keyIter != joinKey.end())
+						keyIter++;
+					continue;
+				}
+			}
 			std::string channelName = (*channelIt).second->getChannelName();
 			(*channelIt).second->appendClientFdList(fd);
 			client->appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
@@ -574,7 +585,10 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 				}
 				else
 				{
-					msgToAllChannel(fd, *vec_iter, "KICK", command_vec[2]);
+					std::string message = command_vec[2];
+					if (command_vec.size() > 3)
+						message += " " + command_vec[3];
+					msgToAllChannel(fd, *vec_iter, "KICK", message);
 					channel->removeClientFdList(target->getClientFd());
 					target->removeChannel(*vec_iter);
 				}
@@ -604,89 +618,170 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 		client->appendClientRecvBuf("324 " + client->getNickname() + " " + command_vec[1] + " +" + channel->getMode() + "\r\n");
 		return;
 	}
+	if (client->getNickname() == command_vec[1] && command_vec[2] == "+i") // 클라이언트의 입장 명령어
+	{
+		client->appendClientRecvBuf("324 " + client->getNickname() + " " + command_vec[1] + " +i" + "\r\n");
+		return;
+	}
 	if (channel != NULL && !channel->checkOperator(fd)) // 채널의 오퍼레이터가 아닐때
 	{
 		client->appendClientRecvBuf("482 " + client->getNickname() + command_vec[1] + " :" + ERR_CHANOPRIVSNEEDED);
 		return;
 	}
 	std::string mode = command_vec[2];
-	char sign = mode[0];
-	if (mode.length() == 1 || (sign != '+' && sign != '-'))
+	char sign;
+	int index = 0;
+	while (mode[index] == '+' || mode[index] == '-')
 	{
-		// ERR_UNKNOWNMODE
+		sign = mode[index];
+		index++;
+	}
+	if (mode.length() == 1)
+	{
 		return;
 	}
 	std::string msg = "";
-	msg += mode[0];
-	for (size_t i = 1; i < mode.length(); i++)
+	std::vector<std::string> modeArgList;
+	unsigned int modeArgIndex = 3;
+	for (size_t i = index; i < mode.length(); i++)
 	{
+		if (mode[i] == '+' || mode[i] == '-')
+			break ;
+		bool isSetMode = false;
 		if (mode[i] == 'i')
 		{
+			if (sign == '+' && channel->checkMode(INVITE))
+				continue;
+			if (sign == '-' && !channel->checkMode(INVITE))
+				continue;
 			if (client->getNickname() == command_vec[1])
 			{
 				client->appendClientRecvBuf("324 " + client->getNickname() + " " + command_vec[1] + " +i" + "\r\n");
 				return;
 			}
 			channel->setMode(INVITE, sign);
+			isSetMode = true;
 		}
 		else if (mode[i] == 't')
 		{
+			if (sign == '+' && channel->checkMode(TOPIC))
+				continue;
+			if (sign == '-' && !channel->checkMode(TOPIC))
+				continue;
 			channel->setMode(TOPIC, sign);
+			isSetMode = true;
 		}
 		else if (mode[i] == 'k')
 		{
-			channel->setMode(KEY, sign);
-			if (sign == '+')
+			if (sign == '-' && !channel->checkMode(KEY))
+				continue;
+			if (command_vec.size() > modeArgIndex)
 			{
-				channel->setKey(command_vec[3]);
+				channel->setMode(KEY, sign);
+				if (sign == '+')
+				{
+					channel->setKey(command_vec[3]);
+				}
+				else if (sign == '-')
+				{
+					channel->setKey("");
+				}
+				isSetMode = true;
+				modeArgList.push_back(command_vec[modeArgIndex]);
+				modeArgIndex++;
 			}
 		}
 		else if (mode[i] == 'l')
 		{
-			channel->setMode(LIMIT, sign);
-			if (sign == '+')
+			if (sign == '-' && !channel->checkMode(LIMIT))
+				continue;
+			if (command_vec.size() > modeArgIndex)
 			{
-				channel->setLimit(atoi(command_vec[3].c_str()));
+				std::string limit_s =  command_vec[modeArgIndex].c_str();
+				bool isDigit = true;
+				for (size_t j = 0; j < limit_s.length(); ++j) {
+					if (!isdigit(limit_s[j])) {
+						isDigit = false;
+						break ;
+					}
+				}
+				if (!isDigit) {
+					modeArgIndex++;
+					continue;
+				}
+				int limit = atoi(limit_s.c_str());
+				if (limit < 0)
+				{
+					modeArgIndex++;
+					continue;
+				}
+				channel->setMode(LIMIT, sign);
+				if (sign == '+')
+				{
+					channel->setLimit(limit);
+				}
+				isSetMode = true;
+				modeArgList.push_back(command_vec[modeArgIndex]);
+				modeArgIndex++;
 			}
 		}
 		else if (mode[i] == 'o')
 		{
-			Client *target = _server.findClient(command_vec[3]);
+			if (command_vec.size() <= modeArgIndex)
+			{
+				continue;
+			}
+			Client *target = _server.findClient(command_vec[modeArgIndex]);
 			if (target == NULL) // 해당 클라이언트가 서버에 없을때
 			{
-				client->appendClientRecvBuf("401 " + client->getNickname() + " " + command_vec[3] + " :" + ERR_NOSUCHNICK);
+				client->appendClientRecvBuf("401 " + client->getNickname() + " " + command_vec[modeArgIndex] + " :" + ERR_NOSUCHNICK);
 				return;
 			}
 			else // 클라이언트가 서버에는 있음
 			{
+				if (client->getNickname() == target->getNickname())
+				{
+					return;
+				}
 				if (!channel->checkClientInChannel(target->getClientFd())) // 채널에는 없음
 				{
-					client->appendClientRecvBuf("441 " + command_vec[3] + " " + command_vec[1] + " :" + ERR_USERNOTINCHANNEL);
+					client->appendClientRecvBuf("441 " + command_vec[modeArgIndex] + " " + command_vec[1] + " :" + ERR_USERNOTINCHANNEL);
 					return;
 				}
 				else if (sign == '+') // 오퍼레이터 추가
 				{
 					channel->addOperatorFd(target->getClientFd());
+					isSetMode = true;
+					modeArgList.push_back(command_vec[modeArgIndex]);
+					modeArgIndex++;
 				}
 				else if (sign == '-') // 오퍼레이터 삭제
 				{
 					channel->removeOperatorFd(target->getClientFd());
+					isSetMode = true;
+					modeArgList.push_back(command_vec[modeArgIndex]);
+					modeArgIndex++;
 				}
 			}
 		}
 		else
 		{
-			// ERR_UNKNOWNMODE
 			client->appendClientRecvBuf("472 " + client->getNickname() + " " + mode[i] + " :" + ERR_UNKNOWNMODE);
 			continue;
 		}
-		msg += mode[i];
-		if (command_vec.size() > 3)
+		if (isSetMode)
 		{
-			msg += " " + command_vec[3];
+			if (msg.empty())
+				msg += sign;
+			msg += mode[i];
 		}
-		msgToAllChannel(fd, command_vec[1], "MODE", msg);
 	}
+	for (size_t i = 0; i < modeArgList.size(); ++i) {
+		msg += " " + modeArgList[i];
+	}
+	if (msg.empty())
+		return;
+	msgToAllChannel(fd, command_vec[1], "MODE", msg);
 }
 
 void Command::msgToAllChannel(int target, std::string channelName, std::string command, std::string msg)
