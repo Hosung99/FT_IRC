@@ -1,8 +1,8 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include "main.hpp"
-#include "Bot.hpp"
+#include "../main.hpp"
+#include "../includes/Bot.hpp"
 
 #define INVITE 1
 #define TOPIC 2
