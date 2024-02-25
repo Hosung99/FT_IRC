@@ -1,9 +1,7 @@
-
 #ifndef UTIL_HPP
 # define UTIL_HPP
 
-#include <iostream>
-#include <sstream>
+#include "../main.hpp"
 
 std::vector<std::string> split(std::string str, char delimiter);
 

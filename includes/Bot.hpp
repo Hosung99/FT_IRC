@@ -1,7 +1,7 @@
 #ifndef BOT_HPP
 #define BOT_HPP
 
-#include "main.hpp"
+#include "../main.hpp"
 
 class Bot
 {

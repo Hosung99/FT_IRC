@@ -1,7 +1,7 @@
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
-#include "main.hpp"
+#include "../main.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Server.hpp"

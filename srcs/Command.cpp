@@ -1,4 +1,5 @@
-#include "Command.hpp"
+#include "../includes/Command.hpp"
+#include "../includes/Util.hpp"
 
 Command::Command(Server &server) : _server(server) {}
 Command::~Command() {}

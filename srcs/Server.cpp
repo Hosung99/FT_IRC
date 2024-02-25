@@ -1,5 +1,5 @@
-#include "Server.hpp"
-#include "Client.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/Command.hpp"
 
 unsigned short int Server::setPortNum(char *str)
 {
