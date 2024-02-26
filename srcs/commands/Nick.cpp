@@ -66,7 +66,7 @@ bool Command::checkNicknameValidate(std::string nickname)
 		return (false);
 	for (size_t i = 1; i < nickname.length(); i++)
 	{
-		if (!isalnum(nickname[i]) && !isspecial(nickname[i]))
+		if (!isalnum(nickname[i]) && !isSpecial(nickname[i]))
 			return (false);
 	}
 	return (true);
