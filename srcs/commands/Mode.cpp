@@ -7,14 +7,13 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 	Client *client = _server.getClients().find(fd)->second;
 	if (command_vec.size() < 2)
 	{
-		client->appendClientRecvBuf("461 :");
-		client->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(client);
 		return;
 	}
 	Channel *channel = _server.findChannel(command_vec[1]);
 	if (client->getNickname() != command_vec[1] && channel == NULL) // 채널이 없을때
 	{
-		client->appendClientRecvBuf("403 " + client->getNickname() + " " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+		err_nosuchchannel_403(client, command_vec[1]);
 		return;
 	}
 	if (channel != NULL && command_vec.size() == 2) // 채널의 모드를 보여줄때
@@ -29,7 +28,7 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 	}
 	if (channel != NULL && !channel->checkOperator(fd)) // 채널의 오퍼레이터가 아닐때
 	{
-		client->appendClientRecvBuf("482 " + client->getNickname() + command_vec[1] + " :" + ERR_CHANOPRIVSNEEDED);
+		err_chanoprivsneeded_482(client, command_vec[1]);
 		return;
 	}
 	std::string mode = command_vec[2];
@@ -141,7 +140,7 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 			Client *target = _server.findClient(command_vec[modeArgIndex]);
 			if (target == NULL) // 해당 클라이언트가 서버에 없을때
 			{
-				client->appendClientRecvBuf("401 " + client->getNickname() + " " + command_vec[modeArgIndex] + " :" + ERR_NOSUCHNICK);
+				err_nosuchnick_401(client, command_vec[modeArgIndex]);
 				return;
 			}
 			else // 클라이언트가 서버에는 있음
@@ -152,7 +151,7 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 				}
 				if (!channel->checkClientInChannel(target->getClientFd())) // 채널에는 없음
 				{
-					client->appendClientRecvBuf("441 " + command_vec[modeArgIndex] + " " + command_vec[1] + " :" + ERR_USERNOTINCHANNEL);
+					err_usernotinchannel_441(client, command_vec[modeArgIndex], command_vec[1]);
 					return;
 				}
 				else if (sign == '+') // 오퍼레이터 추가
@@ -173,7 +172,7 @@ void Command::mode(int fd, std::vector<std::string> command_vec)
 		}
 		else
 		{
-			client->appendClientRecvBuf("472 " + client->getNickname() + " " + mode[i] + " :" + ERR_UNKNOWNMODE);
+			err_unknownmode_472(client, mode[i]);
 			continue;
 		}
 		if (isSetMode)

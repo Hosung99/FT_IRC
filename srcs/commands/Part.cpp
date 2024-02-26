@@ -7,8 +7,7 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 2)
 	{
-		client_iter->second->appendClientRecvBuf("461 :");
-		client_iter->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(client_iter->second);
 		return;
 	}
 	std::istringstream iss(command_vec[1]);
@@ -44,11 +43,11 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 		{
 			if (_server.findChannel(*vec_iter))
 			{
-				client_iter->second->appendClientRecvBuf("442 " + *vec_iter + " :" + ERR_NOTONCHANNEL);
+				err_notonchannel_442(client_iter->second, *vec_iter);
 			}
 			else
 			{
-				client_iter->second->appendClientRecvBuf("403 " + *vec_iter + " :" + ERR_NOSUCHCHANNEL);
+				err_nosuchchannel_403(client_iter->second, *vec_iter);
 			}
 		}
 	}

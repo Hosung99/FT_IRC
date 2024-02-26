@@ -7,35 +7,34 @@ void Command::invite(int fd, std::vector<std::string> command_vec)
 	Client *client = _server.getClients().find(fd)->second;
 	if (command_vec.size() < 3)
 	{
-		client->appendClientRecvBuf("461 :");
-		client->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(client);
 		return;
 	}
 	Client *target = _server.findClient(command_vec[1]);
 	if (target == NULL)
 	{
-		client->appendClientRecvBuf("401 " + client->getNickname() + " " + command_vec[1] + " :" + ERR_NOSUCHNICK);
+		err_nosuchnick_401(client, command_vec[1]);
 		return;
 	}
 	Channel *channel = _server.findChannel(command_vec[2]);
 	if (channel == NULL)
 	{
-		client->appendClientRecvBuf("403 " + client->getNickname() + " " + command_vec[2] + " :" + ERR_NOSUCHCHANNEL);
+		err_nosuchchannel_403(client, command_vec[2]);
 		return;
 	}
 	if (!channel->checkClientInChannel(client->getClientFd()))
 	{
-		client->appendClientRecvBuf("442 " + client->getNickname() + " " + command_vec[2] + " :" + ERR_NOTONCHANNEL);
+		err_notonchannel_442(client, command_vec[2]);
 		return;
 	}
 	if (!channel->checkOperator(client->getClientFd()))
 	{
-		client->appendClientRecvBuf("482 " + client->getNickname() + " " + command_vec[2] + " :" + ERR_CHANOPRIVSNEEDED);
+		err_chanoprivsneeded_482(client, command_vec[2]);
 		return;
 	}
 	if (channel->checkClientInChannel(target->getClientFd()))
 	{
-		client->appendClientRecvBuf("443 " + client->getNickname() + " " + command_vec[1] + " " + command_vec[2] + " :" + ERR_USERONCHANNEL);
+		err_useronchannel_443(client, command_vec[1], command_vec[2]);
 		return;
 	}
 	target->appendClientRecvBuf(":" + client->getNickname() + " INVITE " + target->getNickname() + " " + command_vec[2] + "\r\n");

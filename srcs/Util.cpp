@@ -14,7 +14,7 @@ std::vector<std::string> split(std::string str, char delimiter)
 	return (internal);
 }
 
-bool isspecial(char c)
+bool isSpecial(char c)
 {
 	if (c == '[' || c == ']' || c == '{' || c == '}' || c == '\\' || c == '|' || c == '_')
 		return (true);

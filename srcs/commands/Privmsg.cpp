@@ -7,8 +7,7 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 2)
 	{
-		client_iter->second->appendClientRecvBuf("461 :");
-		client_iter->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(client_iter->second);
 		return;
 	}
 	std::istringstream iss(command_vec[1]);
@@ -34,7 +33,7 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 			}
 			else
 			{
-				client_iter->second->appendClientRecvBuf("403 " + *vec_iter + " :" + ERR_NOSUCHCHANNEL);
+				err_nosuchchannel_403(client_iter->second, *vec_iter);
 			}
 		}
 		else
@@ -47,7 +46,7 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 			}
 			else
 			{
-				client_iter->second->appendClientRecvBuf("401 " + *vec_iter + " :No such nickname\r\n");
+				err_nosuchnick_401(client_iter->second, *vec_iter);
 			}
 		}
 	}
@@ -64,8 +63,7 @@ void Command::botCommand(int fd, std::vector<std::string> command_vec)
 {
 	if (command_vec.size() < 3)
 	{
-		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
-		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(_server.getClients().find(fd)->second);
 		return;
 	}
 	Channel *channel = _server.findChannel(command_vec[1]);
@@ -76,7 +74,7 @@ void Command::botCommand(int fd, std::vector<std::string> command_vec)
 	}
 	if (channel == NULL)
 	{
-		_server.getClients().find(fd)->second->appendClientRecvBuf("403 " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+		err_nosuchchannel_403(_server.getClients().find(fd)->second, command_vec[1]);
 		return;
 	}
 	std::string command = command_vec[3];
@@ -99,8 +97,7 @@ void Command::botCommand(int fd, std::vector<std::string> command_vec)
 	{
 		if (command_vec.size() < 6)
 		{
-			_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
-			_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+			err_needmoreparams_461(_server.getClients().find(fd)->second);
 			return;
 		}
 		std::string commandName = command_vec[4];
@@ -111,8 +108,7 @@ void Command::botCommand(int fd, std::vector<std::string> command_vec)
 	{
 		if (command_vec.size() < 5)
 		{
-			_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
-			_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+			err_needmoreparams_461(_server.getClients().find(fd)->second);
 			return;
 		}
 		std::string commandName = command_vec[4];
@@ -122,8 +118,7 @@ void Command::botCommand(int fd, std::vector<std::string> command_vec)
 	{
 		if (command_vec.size() < 5)
 		{
-			_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
-			_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+			err_needmoreparams_461(_server.getClients().find(fd)->second);
 			return;
 		}
 		std::string commandName = command_vec[4];

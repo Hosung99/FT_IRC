@@ -8,8 +8,7 @@ void Command::ping(int fd, std::vector<std::string> command_vec)
 
 	if (command_vec.size() < 2)
 	{
-		iter->second->appendClientRecvBuf("461 :");
-		iter->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(iter->second);
 		iter->second->appendClientRecvBuf("/PING <token>\r\n");
 		return;
 	}

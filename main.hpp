@@ -18,7 +18,7 @@
 // PASS
 #define ERR_NEEDMOREPARAMS "Not enough parameters\r\n"
 #define ERR_PASSWDMISMATCH "Password incorrect\r\n"
-#define ERR_ALREADYREGIST "You may not reregister\r\n"
+#define ERR_ALREADYREGISTRED "You may not reregister\r\n"
 
 // NICK
 #define ERR_NICKNAMEINUSE "Nickname is already in use\r\n"
