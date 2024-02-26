@@ -24,6 +24,7 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 		iter->second->appendClientRecvBuf("464 :");
 		iter->second->appendClientRecvBuf(ERR_PASSWDMISMATCH);
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
+		iter->second->clearClient();
 		clients.erase(fd);
 		close(fd);
 		return;

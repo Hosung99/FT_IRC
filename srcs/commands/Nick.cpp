@@ -10,6 +10,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		iter->second->appendClientRecvBuf("451 :");
 		iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
+		iter->second->clearClient();
 		clients.erase(fd);
 		close(fd);
 		return;

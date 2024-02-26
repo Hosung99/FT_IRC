@@ -158,3 +158,16 @@ void Client::setRegist(bool isRegist)
 	this->_isRegistNick = isRegist;
 	this->_isRegistUser = isRegist;
 }
+
+void Client::clearClient()
+{
+	_nickName = "";
+	_userName = "";
+	_hostName = "";
+	_serverName = "";
+	_realName = "";
+	_clientFd = -2;
+	this->clearChannelList();
+	this->clearClientRecvBuf();
+	this->setRegist(false);
+}

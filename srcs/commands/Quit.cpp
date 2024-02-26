@@ -10,16 +10,16 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 	for (; channel_iter != channelList.end(); channel_iter++)
 	{
 		Channel *channel = _server.findChannel(*channel_iter);
+		if (!channel)
+			continue ;
 		channel->removeClientFdList(fd);
 		channel->removeOperatorFd(fd);
-		if (channel)
-		{
-			msgToAllChannel(fd, channel->getChannelName(), "QUIT", channelMessage(1, command_vec));
-		}
+		msgToAllChannel(fd, channel->getChannelName(), "QUIT", channelMessage(1, command_vec));
 		if (channel->getClientFdList().size() == 1)
 		{
 			_server.removeChannel(channel->getChannelName());
 			delete channel;
+			std::cout << channel << std::endl;
 		}
 		else
 		{
@@ -29,7 +29,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 			channel->addOperatorFd(*fd_iter);
 		}
 	}
-	client_iter->second->setRegist(false);
+	client_iter->second->clearClient();
 	clients.erase(fd);
 	close(fd);
 }

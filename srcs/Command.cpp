@@ -36,7 +36,7 @@ void Command::run(int fd)
 			iter->second->appendClientRecvBuf(iter->second->getNickname() + " :");
 			iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
 			send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
-			iter->second->clearClientRecvBuf();
+			iter->second->clearClient();
 			clients.erase(fd);
 			close(fd);
 		}
