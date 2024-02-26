@@ -84,6 +84,11 @@ void Command::msgToAllChannel(int target, std::string channelName, std::string c
 	while (iter != clientFdList.end())
 	{
 		Client *client = _server.getClients().find(*iter)->second;
+		if (command == "PRIVMSG" && target == *iter)
+		{
+			iter++;
+			continue ;
+		}
 		client->appendClientRecvBuf(makeFullName(target) + " " + command + " " + channelName + " " + msg + "\r\n");
 		iter++;
 	}

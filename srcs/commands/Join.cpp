@@ -30,11 +30,12 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 				keyIter++;
 			continue;
 		}
-		std::map<std::string, Channel *> channelList = _server.getChannelList();
+		std::map<std::string, Channel *> &channelList = _server.getChannelList();
 		std::map<std::string, Channel *>::iterator channelIt = channelList.find(*iter);
 		if (channelIt != channelList.end()) // 채널이 있다면
 		{
 			// 해당 클라이언트를 채널에 넣어준다.
+			std::cout << "나오면 안됨^^" << std::endl;
 			Channel *channel = channelIt->second;
 			if (channel->checkClientInChannel(fd))
 			{
@@ -85,8 +86,8 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		else // 채널이 없다면
 		{
 			_server.appendNewChannel(*iter, fd);				// 서버에 채널을 추가 해준다.
-			_server.findChannel(*iter)->appendClientFdList(fd); // 해당 클라이언트를 채널에 넣어준다.
 			_server.findChannel(*iter)->appendClientFdList(-1);
+			_server.findChannel(*iter)->appendClientFdList(fd); // 해당 클라이언트를 채널에 넣어준다.
 			client->appendChannelList(*iter);
 			msgToAllChannel(fd, *iter, "JOIN", "");
 			_server.findChannel(*iter)->addOperatorFd(fd);

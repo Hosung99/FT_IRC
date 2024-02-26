@@ -23,7 +23,7 @@ public:
 	std::map<int, Client *>& getClients(void);
 	std::string getPassword(void);
 	std::string getMessage(int);
-	std::map<std::string, Channel *> getChannelList(void);
+	std::map<std::string, Channel *>& getChannelList(void);
 	Channel *findChannel(std::string channelName);
 	Client *findClient(std::string channelName);
 	void removeChannel(std::string channelName);
