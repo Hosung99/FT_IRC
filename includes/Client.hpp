@@ -54,6 +54,7 @@ public:
 	void clearChannelList();
 	std::vector<std::string>::iterator findChannel(std::string channelName);
 	void makeClientToBot();
+	void clearClient();
 };
 
 #endif

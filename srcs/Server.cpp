@@ -199,8 +199,7 @@ void Server::execute()
 						{
 							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
 							Client* client = _clients.find(_fds[i].fd)->second;
-							client->clearClientRecvBuf();
-							client->setRegist(false);
+							client->clearClient();
 							_clients.erase(_fds[i].fd);
 							close(_fds[i].fd);
 							delete client;
