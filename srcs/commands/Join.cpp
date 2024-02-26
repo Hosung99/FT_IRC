@@ -36,6 +36,13 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		{
 			// 해당 클라이언트를 채널에 넣어준다.
 			Channel *channel = channelIt->second;
+			if (channel->checkClientInChannel(fd))
+			{
+				iter++;
+				if (command_vec.size() > 2 || keyIter != joinKey.end())
+					keyIter++;
+				continue;
+			}
 			if (channel->checkMode(INVITE)) // INVITE 모드가 켜져있다면
 			{
 				if (!channel->checkInvite(fd))
