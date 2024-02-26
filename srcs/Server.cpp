@@ -125,7 +125,7 @@ std::string Server::getMessage(int fd)
 	return (this->_message[fd]);
 }
 
-std::map<std::string, Channel *> Server::getChannelList()
+std::map<std::string, Channel *> &Server::getChannelList()
 {
 	return (this->_channelList);
 }
@@ -198,11 +198,13 @@ void Server::execute()
 						if (_strLen <= 0)
 						{
 							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
-							Client* client = _clients.find(_fds[i].fd)->second;
-							client->clearClient();
-							_clients.erase(_fds[i].fd);
-							close(_fds[i].fd);
-							delete client;
+							std::map<int, Client*>::iterator client = _clients.find(_fds[i].fd);
+							if (client != _clients.end())
+							{
+								client->second->clearClient();
+								_clients.erase(_fds[i].fd);
+								delete client->second;
+							}
 						}
 						else
 						{
@@ -219,7 +221,7 @@ void Server::execute()
 			std::map<int, Client *>::iterator iter = _clients.begin();
 			for (; iter != _clients.end(); iter++)
 			{
-				if (iter->second->getClientRecvBuf().length() > 0)
+				if (iter->second && iter->second->getClientRecvBuf().length() > 0)
 				{
 					send(iter->first, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 					iter->second->clearClientRecvBuf();

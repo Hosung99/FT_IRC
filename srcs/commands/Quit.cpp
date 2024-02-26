@@ -29,7 +29,8 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 			channel->addOperatorFd(*fd_iter);
 		}
 	}
+	// Client *client = client_iter->second;
 	client_iter->second->clearClient();
 	clients.erase(fd);
-	close(fd);
+	// delete client;
 }

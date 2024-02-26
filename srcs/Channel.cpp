@@ -2,8 +2,10 @@
 
 Channel::Channel(const std::string &channelName, int fd)
 {
+	memset(this, 0, sizeof(Channel));
 	this->_channelName = channelName;
 	this->_operatorFdList.push_back(fd);
+	std::cout << "operator fd: " << fd << std::endl;
 	this->_bot = new Bot();
 	this->_mode = 0;
 }

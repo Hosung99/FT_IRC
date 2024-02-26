@@ -26,7 +26,7 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		iter->second->clearClient();
 		clients.erase(fd);
-		close(fd);
+		// close(fd);
 		return;
 	}
 	iter->second->setPassRegist(true);
