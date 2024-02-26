@@ -19,7 +19,6 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		{
 			_server.removeChannel(channel->getChannelName());
 			delete channel;
-			std::cout << channel << std::endl;
 		}
 		else
 		{
