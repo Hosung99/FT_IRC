@@ -11,7 +11,6 @@ Client::Client(int clientfd)
 
 Client::~Client()
 {
-	close(_clientFd);
 }
 
 void Client::setNickname(std::string nickname)

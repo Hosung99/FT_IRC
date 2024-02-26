@@ -201,9 +201,11 @@ void Server::execute()
 							std::map<int, Client*>::iterator client = _clients.find(_fds[i].fd);
 							if (client != _clients.end())
 							{
+								Client *cl = _clients.find(_fds[i].fd)->second;
 								client->second->clearClient();
 								_clients.erase(_fds[i].fd);
-								delete client->second;
+								close(_fds[i].fd);
+								delete cl;
 							}
 						}
 						else

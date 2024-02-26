@@ -35,7 +35,6 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		if (channelIt != channelList.end()) // 채널이 있다면
 		{
 			// 해당 클라이언트를 채널에 넣어준다.
-			std::cout << "나오면 안됨^^" << std::endl;
 			Channel *channel = channelIt->second;
 			if (channel->checkClientInChannel(fd))
 			{
