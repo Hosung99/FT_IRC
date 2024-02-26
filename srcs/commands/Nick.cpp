@@ -52,7 +52,8 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	for (; channel_iter != channelList.end(); channel_iter++)
 	{
 		Channel *channel = _server.findChannel(*channel_iter);
-		msgToAllChannel(fd, channel->getChannelName(), "NICK", old_nickname + " " + command_vec[1]);
+		if (channel)
+			msgToAllChannel(fd, channel->getChannelName(), "NICK", old_nickname + " " + command_vec[1]);
 	}
 	iter->second->setNickname(command_vec[1]);
 	iter->second->appendClientRecvBuf(":" + old_nickname + " NICK " + iter->second->getNickname() + "\r\n");
