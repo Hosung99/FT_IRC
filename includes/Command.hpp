@@ -5,6 +5,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Server.hpp"
+#include "Error.hpp"
 
 class Client;
 class Server;

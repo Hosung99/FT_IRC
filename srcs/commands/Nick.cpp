@@ -7,8 +7,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	if (!iter->second->getPassRegist())
 	{
-		iter->second->appendClientRecvBuf("451 :");
-		iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
+		err_notregistered_451(iter->second);
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		iter->second->clearClient();
 		clients.erase(fd);
@@ -17,8 +16,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	}
 	if (command_vec.size() < 2)
 	{
-		iter->second->appendClientRecvBuf("431 :");
-		iter->second->appendClientRecvBuf(ERR_NONICKNAMEGIVEN);
+		err_nonicknamegiven_431(iter->second);
 		return;
 	}
 	if (command_vec[1] == "_")
@@ -34,15 +32,13 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	}
 	if (!checkNicknameValidate(command_vec[1]))
 	{
-		iter->second->appendClientRecvBuf("432 :");
-		iter->second->appendClientRecvBuf(ERR_ERRONEUSNICKNAME);
+		err_erroneusnickname_432(iter->second);
 		iter->second->appendClientRecvBuf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
 		return;
 	}
 	if (!checkNicknameDuplicate(command_vec[1], _server.getClients()))
 	{
-		iter->second->appendClientRecvBuf("433 :");
-		iter->second->appendClientRecvBuf(ERR_NICKNAMEINUSE);
+		err_nicknameinuse_433(iter->second);
 		return;
 	}
 	std::string old_nickname = iter->second->getNickname();
@@ -81,10 +77,19 @@ bool Command::checkNicknameDuplicate(std::string nickname, std::map<int, Client 
 	std::map<int, Client *>::iterator iter = Clients.begin();
 	for (; iter != Clients.end(); iter++)
 	{
-		if (iter->second->getNickname() == nickname)
-		{
-			return (false);
+		std::string clientNickname = iter->second->getNickname();
+		bool isSame = true;
+		if (clientNickname.length() != nickname.length())
+			continue;
+		for (size_t i = 0; i < nickname.length(); ++i) {
+			if (std::toupper(nickname[i]) != std::toupper(clientNickname[i]))
+			{
+				isSame = false;
+				break;
+			}
 		}
+		if (isSame)
+			return (false);
 	}
 	return (true);
 }

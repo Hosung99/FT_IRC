@@ -110,7 +110,7 @@ bool Channel::checkMode(unsigned char mode)
 
 void Channel::setLimit(unsigned int limit)
 {
-	this->_limit = limit;
+	this->_limit = limit + 1;
 }
 
 unsigned int Channel::getLimit()

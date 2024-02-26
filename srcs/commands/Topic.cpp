@@ -5,14 +5,13 @@ void Command::topic(int fd, std::vector<std::string> command_vec)
 {
 	if (command_vec.size() < 2)
 	{
-		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
-		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(_server.getClients().find(fd)->second);
 		return;
 	}
 	Channel *channel = _server.findChannel(command_vec[1]);
 	if (channel == NULL)
 	{
-		_server.getClients().find(fd)->second->appendClientRecvBuf("403 " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+		err_nosuchchannel_403(_server.getClients().find(fd)->second, command_vec[1]);
 		return;
 	}
 	std::vector<int> clientFdList = channel->getClientFdList();
@@ -26,14 +25,14 @@ void Command::topic(int fd, std::vector<std::string> command_vec)
 	}
 	if (iter == clientFdList.end())
 	{
-		_server.getClients().find(fd)->second->appendClientRecvBuf("442 " + command_vec[1] + " :" + ERR_NOTONCHANNEL);
+		err_notonchannel_442(_server.getClients().find(fd)->second, command_vec[1]);
 		return;
 	}
 	if (channel->checkMode(TOPIC))
 	{
 		if (channel->checkOperator(fd) == false)
 		{
-			_server.getClients().find(fd)->second->appendClientRecvBuf("482 " + _server.getClients().find(fd)->second->getNickname() + " " + command_vec[1] + " :" + ERR_CHANOPRIVSNEEDED);
+			err_chanoprivsneeded_482(_server.getClients().find(fd)->second, command_vec[1]);
 			return;
 		}
 	}
@@ -41,7 +40,7 @@ void Command::topic(int fd, std::vector<std::string> command_vec)
 	{
 		if (channel == NULL)
 		{
-			_server.getClients().find(fd)->second->appendClientRecvBuf("403 " + command_vec[1] + " :" + ERR_NOSUCHCHANNEL);
+			err_nosuchchannel_403(_server.getClients().find(fd)->second, command_vec[1]);
 			return;
 		}
 		if (channel->getTopic().length() == 0)

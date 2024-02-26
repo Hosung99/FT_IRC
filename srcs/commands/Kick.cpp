@@ -7,8 +7,7 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 3)
 	{
-		client_iter->second->appendClientRecvBuf("461 :");
-		client_iter->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(client_iter->second);
 		return;
 	}
 	std::istringstream iss(command_vec[1]);
@@ -20,7 +19,7 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 	Channel *channel = _server.findChannel(*vec_iter);
 	if (channel && !channel->checkOperator(fd))
 	{
-		client_iter->second->appendClientRecvBuf("482 " + *vec_iter + " :" + ERR_CHANOPRIVSNEEDED);
+		err_chanoprivsneeded_482(client_iter->second, *vec_iter);
 		return;
 	}
 	for (; vec_iter != vec.end(); vec_iter++)
@@ -28,14 +27,20 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 		Channel *channel = _server.findChannel(*vec_iter);
 		if (channel == NULL)
 		{
-			client_iter->second->appendClientRecvBuf("403 " + *vec_iter + " :" + ERR_NOSUCHCHANNEL);
+			err_nosuchchannel_403(client_iter->second, *vec_iter);
 		}
 		else
 		{
 			Client *target = _server.findClient(command_vec[2]);
 			if (target == NULL)
 			{
-				client_iter->second->appendClientRecvBuf("401 " + command_vec[2] + " :" + ERR_NOSUCHNICK);
+				err_nosuchnick_401(client_iter->second, command_vec[2]);
+				return;
+			}
+			if (target->getClientFd() == -1)
+			{
+				err_nosuchnick_401(client_iter->second, command_vec[2]);
+				return;
 			}
 			if (target->getNickname() == client_iter->second->getNickname())
 			{
@@ -45,7 +50,7 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 			{
 				if (!channel->checkClientInChannel(target->getClientFd()))
 				{
-					client_iter->second->appendClientRecvBuf("441 " + command_vec[2] + " " + *vec_iter + " :" + ERR_USERNOTINCHANNEL);
+					err_usernotinchannel_441(client_iter->second, command_vec[2], *vec_iter);
 				}
 				else
 				{

@@ -7,14 +7,12 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	std::map<int, Client *>::iterator iter = clients.find(fd);
 	if (iter->second->getUserRegist())
 	{
-		iter->second->appendClientRecvBuf("462 : ");
-		iter->second->appendClientRecvBuf(ERR_ALREADYREGIST);
+		err_alreadyregistred_462(iter->second);
 		return;
 	}
 	if (!iter->second->getPassRegist())
 	{
-		iter->second->appendClientRecvBuf("451 :");
-		iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
+		err_notregistered_451(iter->second);
 		iter->second->appendClientRecvBuf("\r\n");
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		iter->second->clearClient();
@@ -24,8 +22,7 @@ void Command::user(int fd, std::vector<std::string> command_vec)
 	}
 	if (command_vec.size() < 5 || !checkRealname(command_vec[4]))
 	{
-		iter->second->appendClientRecvBuf("461 USER :");
-		iter->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(iter->second);
 		iter->second->appendClientRecvBuf("/USER <username> <hostname> <servername> <:realname>\r\n");
 		return;
 	}

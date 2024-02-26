@@ -25,7 +25,7 @@ public:
 	std::string getMessage(int);
 	std::map<std::string, Channel *>& getChannelList(void);
 	Channel *findChannel(std::string channelName);
-	Client *findClient(std::string channelName);
+	Client *findClient(std::string clientName);
 	void removeChannel(std::string channelName);
 	void appendNewChannel(std::string& channelName, int fd);
 

@@ -5,8 +5,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 {
 	if (command_vec.size() < 2)
 	{
-		_server.getClients().find(fd)->second->appendClientRecvBuf("461 :");
-		_server.getClients().find(fd)->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(_server.getClients().find(fd)->second);
 		return;
 	}
 	std::vector<std::string> joinChannel = split(command_vec[1], ',');
@@ -24,7 +23,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 	{
 		if ((*iter)[0] != '#' && (*iter)[0] != '&')
 		{
-			client->appendClientRecvBuf("403 " + *iter + " :" + ERR_NOSUCHCHANNEL);
+			err_nosuchchannel_403(client, *iter);
 			iter++;
 			if (command_vec.size() > 2 || keyIter != joinKey.end())
 				keyIter++;
@@ -47,7 +46,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			{
 				if (!channel->checkInvite(fd))
 				{
-					client->appendClientRecvBuf("473 " + client->getNickname() + " " + *iter + " :" + ERR_INVITEONLYCHAN);
+					err_inviteonlychan_473(client, *iter);
 					iter++;
 					if (command_vec.size() > 2 || keyIter != joinKey.end())
 						keyIter++;
@@ -58,7 +57,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			{
 				if (command_vec.size() <= 2 || keyIter == joinKey.end() || !channel->checkKey(*keyIter)) // 인자에 키가 없거나 키가 틀리다면
 				{
-					client->appendClientRecvBuf("475 " + client->getNickname() + " " + *iter + " :" + ERR_BADCHANNELKEY);
+					err_badchannelkey_475(client, *iter);
 					iter++;
 					if (command_vec.size() > 2 || keyIter != joinKey.end())
 						keyIter++;
@@ -69,7 +68,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			{
 				if (channel->getClientFdList().size() >= channel->getLimit())
 				{
-					client->appendClientRecvBuf("471 " + client->getNickname() + " " + *iter + " :" + ERR_CHANNELISFULL);
+					err_channelisfull_471(client, *iter);
 					iter++;
 					if (command_vec.size() > 2 || keyIter != joinKey.end())
 						keyIter++;

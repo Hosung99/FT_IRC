@@ -9,20 +9,17 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 	std::string password = _server.getPassword();
 	if (iter->second->getPassRegist())
 	{
-		iter->second->appendClientRecvBuf("462 : ");
-		iter->second->appendClientRecvBuf(ERR_ALREADYREGIST);
+		err_alreadyregistred_462(iter->second);
 		return;
 	}
 	if (command_vec.size() < 2)
 	{
-		iter->second->appendClientRecvBuf("461 PASS: ");
-		iter->second->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+		err_needmoreparams_461(iter->second);
 		return;
 	}
 	if (strcmp(command_vec[1].c_str(), password.c_str()) != 0)
 	{
-		iter->second->appendClientRecvBuf("464 :");
-		iter->second->appendClientRecvBuf(ERR_PASSWDMISMATCH);
+		err_passwdmismatch_464(iter->second);
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		iter->second->clearClient();
 		clients.erase(fd);
