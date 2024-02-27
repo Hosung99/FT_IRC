@@ -37,15 +37,12 @@ void Command::run(int fd)
 			iter->second.appendClientRecvBuf(ERR_NOTREGISTERED);
 			send(fd, iter->second.getClientRecvBuf().c_str(), iter->second.getClientRecvBuf().length(), 0);
 			iter->second.clearClient();
-			// delete iter->second;
-			// iter->second = NULL;
 			clients.erase(fd);
 			close(fd);
 		}
 		iter = clients.find(fd);
 		if (iter != clients.end())
 		{
-			// iter->second != NULL &&
 			if (iter->second.getIsRegist())
 			{
 				iter->second.appendClientRecvBuf(":IRC 001 " + iter->second.getNickname() + " :Welcome to the Interget Relay Network " + iter->second.getNickname() + "!" + iter->second.getUsername() + "@" + iter->second.getHostname() + "\r\n");

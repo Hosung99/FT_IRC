@@ -3,7 +3,6 @@
 
 void Command::mode(int fd, std::vector<std::string> command_vec)
 {
-	// parsing
 	Client &client = _server.getClients().find(fd)->second;
 	if (command_vec.size() < 2)
 	{

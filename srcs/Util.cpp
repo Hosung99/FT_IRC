@@ -75,7 +75,6 @@ void Command::msgToAllChannel(int target, std::string channelName, std::string c
 	std::map<std::string, Channel *>& channelList = _server.getChannelList();
 	if (channelList.find(channelName) == channelList.end())
 	{
-		// ERR_NOSUCHCHANNEL
 		return;
 	}
 	Channel *channel = channelList.find(channelName)->second;
