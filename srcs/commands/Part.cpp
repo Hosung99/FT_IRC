@@ -31,13 +31,6 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 				_server.removeChannel(channel->getChannelName());
 				delete channel;
 			}
-			else
-			{
-				std::vector<int> fdList = channel->getClientFdList();
-				std::vector<int>::iterator fd_iter = fdList.begin();
-				fd_iter++;
-				channel->addOperatorFd(*fd_iter);
-			}
 		}
 		else
 		{
