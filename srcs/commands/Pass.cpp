@@ -22,8 +22,10 @@ void Command::pass(int fd, std::vector<std::string> command_vec)
 		err_passwdmismatch_464(iter->second);
 		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 		iter->second->clearClient();
+		delete iter->second;
+		iter->second = NULL;
 		clients.erase(fd);
-		// close(fd);
+		close(fd);
 		return;
 	}
 	iter->second->setPassRegist(true);
