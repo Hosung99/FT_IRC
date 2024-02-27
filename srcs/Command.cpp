@@ -37,6 +37,8 @@ void Command::run(int fd)
 			iter->second->appendClientRecvBuf(ERR_NOTREGISTERED);
 			send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
 			iter->second->clearClient();
+			delete iter->second;
+			iter->second = NULL;
 			clients.erase(fd);
 			close(fd);
 		}
