@@ -15,6 +15,7 @@
 #include <sstream>
 
 #define BUF_SIZE 1024
+
 // PASS
 #define ERR_NEEDMOREPARAMS "Not enough parameters\r\n"
 #define ERR_PASSWDMISMATCH "Password incorrect\r\n"

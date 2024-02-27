@@ -43,7 +43,6 @@ Server::~Server()
 	for (; iter != _clients.end(); iter++)
 	{
 		close(iter->first);
-		// delete iter->second;
 	}
 	std::map<std::string, Channel *>::iterator iter2 = _channelList.begin();
 	for (; iter2 != _channelList.end(); iter2++)
@@ -89,7 +88,7 @@ void Server::setServerAddr()
 {
 	memset(&this->_serverAddr, 0, sizeof(_serverAddr));
 	_serverAddr.sin_family = AF_INET;
-	_serverAddr.sin_addr.s_addr = inet_addr("10.18.233.214");
+	_serverAddr.sin_addr.s_addr = INADDR_ANY; // inet_addr("현재 컴퓨터의 IP 주소");
 	_serverAddr.sin_port = htons(this->_portNum);
 }
 
@@ -202,8 +201,6 @@ void Server::execute()
 							if (client != _clients.end())
 							{
 								client->second.clearClient();
-								// delete client->second;
-								// client->second = NULL;
 								_clients.erase(_fds[i].fd);
 								close(_fds[i].fd);
 							}
@@ -223,7 +220,6 @@ void Server::execute()
 			std::map<int, Client>::iterator iter = _clients.begin();
 			for (; iter != _clients.end(); iter++)
 			{
-				//iter->second &&
 				if (iter->second.getClientRecvBuf().length() > 0)
 				{
 					send(iter->first, iter->second.getClientRecvBuf().c_str(), iter->second.getClientRecvBuf().length(), 0);

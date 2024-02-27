@@ -22,8 +22,6 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 		}
 	}
 	client_iter->second.clearClient();
-	// delete client_iter->second;
-	// client_iter->second = NULL;
 	clients.erase(fd);
 	close(fd);
 }
