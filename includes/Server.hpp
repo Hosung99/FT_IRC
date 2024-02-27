@@ -20,12 +20,12 @@ public:
 
 	/* member functions */
 	void run(void);
-	std::map<int, Client *>& getClients(void);
+	std::map<int, Client>& getClients(void);
 	std::string getPassword(void);
 	std::string getMessage(int);
 	std::map<std::string, Channel *>& getChannelList(void);
 	Channel *findChannel(std::string channelName);
-	Client *findClient(std::string clientName);
+	std::map<int, Client>::iterator findClient(std::string clientName);
 	void removeChannel(std::string channelName);
 	void appendNewChannel(std::string& channelName, int fd);
 
@@ -37,7 +37,7 @@ private:
 
 	/* member variables */
 	Command *_command;
-	std::map<int, Client *> _clients;
+	std::map<int, Client> _clients;
 	std::map<std::string, Channel *> _channelList;
 	std::string _password;
 	unsigned short int _portNum;

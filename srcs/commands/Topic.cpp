@@ -45,10 +45,10 @@ void Command::topic(int fd, std::vector<std::string> command_vec)
 		}
 		if (channel->getTopic().length() == 0)
 		{
-			_server.getClients().find(fd)->second->appendClientRecvBuf("331 " + _server.getClients().find(fd)->second->getNickname() + " " + command_vec[1] + " :" + RPL_NOTOPIC);
+			_server.getClients().find(fd)->second.appendClientRecvBuf("331 " + _server.getClients().find(fd)->second.getNickname() + " " + command_vec[1] + " :" + RPL_NOTOPIC);
 			return;
 		}
-		_server.getClients().find(fd)->second->appendClientRecvBuf("332 " + _server.getClients().find(fd)->second->getNickname() + " " + command_vec[1] + " :" + channel->getTopic() + "\r\n");
+		_server.getClients().find(fd)->second.appendClientRecvBuf("332 " + _server.getClients().find(fd)->second.getNickname() + " " + command_vec[1] + " :" + channel->getTopic() + "\r\n");
 	}
 	else
 	{

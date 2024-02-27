@@ -1,98 +1,98 @@
 #include "../includes/Error.hpp"
 
-void err_nosuchnick_401(Client *client, std::string nickname)
+void err_nosuchnick_401(Client &client, std::string nickname)
 {
-	client->appendClientRecvBuf("401 " + client->getNickname() + " " + nickname + " :" + ERR_NOSUCHNICK);
+	client.appendClientRecvBuf("401 " + client.getNickname() + " " + nickname + " :" + ERR_NOSUCHNICK);
 }
 
-void err_nosuchchannel_403(Client *client, std::string channel)
+void err_nosuchchannel_403(Client &client, std::string channel)
 {
-	client->appendClientRecvBuf("403 " + client->getNickname() + " " + channel + " :" + ERR_NOSUCHCHANNEL);
+	client.appendClientRecvBuf("403 " + client.getNickname() + " " + channel + " :" + ERR_NOSUCHCHANNEL);
 }
 
-void err_notonchannel_442(Client *client, std::string channel)
+void err_notonchannel_442(Client &client, std::string channel)
 {
-	client->appendClientRecvBuf("442 " + client->getNickname() + " " + channel + " :" + ERR_NOTONCHANNEL);
+	client.appendClientRecvBuf("442 " + client.getNickname() + " " + channel + " :" + ERR_NOTONCHANNEL);
 }
 
-void err_chanoprivsneeded_482(Client *client, std::string channel)
+void err_chanoprivsneeded_482(Client &client, std::string channel)
 {
-	client->appendClientRecvBuf("482 " + client->getNickname() + " " + channel + " :" + ERR_CHANOPRIVSNEEDED);
+	client.appendClientRecvBuf("482 " + client.getNickname() + " " + channel + " :" + ERR_CHANOPRIVSNEEDED);
 }
 
-void err_useronchannel_443(Client *client, std::string nickname, std::string channel)
+void err_useronchannel_443(Client &client, std::string nickname, std::string channel)
 {
-	client->appendClientRecvBuf("443 " + client->getNickname() + " " + nickname + " " + channel + " :" + ERR_USERONCHANNEL);
+	client.appendClientRecvBuf("443 " + client.getNickname() + " " + nickname + " " + channel + " :" + ERR_USERONCHANNEL);
 }
 
-void err_usernotinchannel_441(Client *client, std::string nickname, std::string channel)
+void err_usernotinchannel_441(Client &client, std::string nickname, std::string channel)
 {
-	client->appendClientRecvBuf("441 " + client->getNickname() + " " + nickname + " " + channel + " :" + ERR_USERNOTINCHANNEL);
+	client.appendClientRecvBuf("441 " + client.getNickname() + " " + nickname + " " + channel + " :" + ERR_USERNOTINCHANNEL);
 }
 
-void err_needmoreparams_461(Client *client)
+void err_needmoreparams_461(Client &client)
 {
-	client->appendClientRecvBuf("461 :");
-	client->appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+	client.appendClientRecvBuf("461 :");
+	client.appendClientRecvBuf(ERR_NEEDMOREPARAMS);
 }
 
-void err_alreadyregistred_462(Client *client)
+void err_alreadyregistred_462(Client &client)
 {
-	client->appendClientRecvBuf("462 :");
-	client->appendClientRecvBuf(ERR_ALREADYREGISTRED);
+	client.appendClientRecvBuf("462 :");
+	client.appendClientRecvBuf(ERR_ALREADYREGISTRED);
 }
 
-void err_passwdmismatch_464(Client *client)
+void err_passwdmismatch_464(Client &client)
 {
-	client->appendClientRecvBuf("464 :");
-	client->appendClientRecvBuf(ERR_PASSWDMISMATCH);
+	client.appendClientRecvBuf("464 :");
+	client.appendClientRecvBuf(ERR_PASSWDMISMATCH);
 }
 
-void err_unknownmode_472(Client *client, char mode)
+void err_unknownmode_472(Client &client, char mode)
 {
-	client->appendClientRecvBuf("472 " + client->getNickname() + " " + mode + " :" + ERR_UNKNOWNMODE);
+	client.appendClientRecvBuf("472 " + client.getNickname() + " " + mode + " :" + ERR_UNKNOWNMODE);
 }
 
-void err_nonicknamegiven_431(Client *client)
+void err_nonicknamegiven_431(Client &client)
 {
-	client->appendClientRecvBuf("431 :");
-	client->appendClientRecvBuf(ERR_NONICKNAMEGIVEN);
+	client.appendClientRecvBuf("431 :");
+	client.appendClientRecvBuf(ERR_NONICKNAMEGIVEN);
 }
 
-void err_erroneusnickname_432(Client *client)
+void err_erroneusnickname_432(Client &client)
 {
-	client->appendClientRecvBuf("432 :");
-	client->appendClientRecvBuf(ERR_ERRONEUSNICKNAME);
+	client.appendClientRecvBuf("432 :");
+	client.appendClientRecvBuf(ERR_ERRONEUSNICKNAME);
 }
 
-void err_nicknameinuse_433(Client *client)
+void err_nicknameinuse_433(Client &client)
 {
-	client->appendClientRecvBuf("433 :");
-	client->appendClientRecvBuf(ERR_NICKNAMEINUSE);
+	client.appendClientRecvBuf("433 :");
+	client.appendClientRecvBuf(ERR_NICKNAMEINUSE);
 }
 
-void err_unknownmode_472(Client *client, std::string mode)
+void err_unknownmode_472(Client &client, std::string mode)
 {
-	client->appendClientRecvBuf("472 " + client->getNickname() + " " + mode + " :" + ERR_UNKNOWNMODE);
+	client.appendClientRecvBuf("472 " + client.getNickname() + " " + mode + " :" + ERR_UNKNOWNMODE);
 }
 
-void err_inviteonlychan_473(Client *client, std::string channel)
+void err_inviteonlychan_473(Client &client, std::string channel)
 {
-	client->appendClientRecvBuf("473 " + client->getNickname() + " " + channel + " :" + ERR_INVITEONLYCHAN);
+	client.appendClientRecvBuf("473 " + client.getNickname() + " " + channel + " :" + ERR_INVITEONLYCHAN);
 }
 
-void err_badchannelkey_475(Client *client, std::string channel)
+void err_badchannelkey_475(Client &client, std::string channel)
 {
-	client->appendClientRecvBuf("475 " + client->getNickname() + " " + channel + " :" + ERR_BADCHANNELKEY);
+	client.appendClientRecvBuf("475 " + client.getNickname() + " " + channel + " :" + ERR_BADCHANNELKEY);
 }
 
-void err_channelisfull_471(Client *client, std::string channel)
+void err_channelisfull_471(Client &client, std::string channel)
 {
-	client->appendClientRecvBuf("471 " + client->getNickname() + " " + channel + " :" + ERR_CHANNELISFULL);
+	client.appendClientRecvBuf("471 " + client.getNickname() + " " + channel + " :" + ERR_CHANNELISFULL);
 }
 
-void err_notregistered_451(Client *client)
+void err_notregistered_451(Client &client)
 {
-	client->appendClientRecvBuf("451 :");
-	client->appendClientRecvBuf(ERR_NOTREGISTERED);
+	client.appendClientRecvBuf("451 :");
+	client.appendClientRecvBuf(ERR_NOTREGISTERED);
 }

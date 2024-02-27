@@ -3,9 +3,9 @@
 
 void Command::quit(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.getClients();
-	std::map<int, Client *>::iterator client_iter = clients.find(fd);
-	std::vector<std::string> channelList = client_iter->second->getChannelList();
+	std::map<int, Client>& clients = _server.getClients();
+	std::map<int, Client>::iterator client_iter = clients.find(fd);
+	std::vector<std::string> channelList = client_iter->second.getChannelList();
 	std::vector<std::string>::iterator channel_iter = channelList.begin();
 	for (; channel_iter != channelList.end(); channel_iter++)
 	{
@@ -21,7 +21,7 @@ void Command::quit(int fd, std::vector<std::string> command_vec)
 			delete channel;
 		}
 	}
-	client_iter->second->clearClient();
+	client_iter->second.clearClient();
 	// delete client_iter->second;
 	// client_iter->second = NULL;
 	clients.erase(fd);

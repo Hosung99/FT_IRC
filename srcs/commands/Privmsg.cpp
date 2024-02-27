@@ -3,8 +3,8 @@
 
 void Command::privmsg(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.getClients();
-	std::map<int, Client *>::iterator client_iter = clients.find(fd);
+	std::map<int, Client>& clients = _server.getClients();
+	std::map<int, Client>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 2)
 	{
 		err_needmoreparams_461(client_iter->second);
@@ -38,11 +38,11 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 		}
 		else
 		{
-			Client *client = _server.findClient(*vec_iter);
-			if (client)
+			std::map<int, Client>::iterator client = _server.findClient(*vec_iter);
+			if (client != _server.getClients().end())
 			{
 				std::string message = channelMessage(2, command_vec);
-				client->appendClientRecvBuf(":" + client_iter->second->getNickname() + " PRIVMSG " + client->getNickname() + " :" + message + "\r\n");
+				client->second.appendClientRecvBuf(":" + client_iter->second.getNickname() + " PRIVMSG " + client->second.getNickname() + " :" + message + "\r\n");
 			}
 			else
 			{

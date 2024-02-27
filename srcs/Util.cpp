@@ -37,24 +37,24 @@ std::string Command::channelMessage(int index, std::vector<std::string> command_
 	return (message);
 }
 
-void Command::channelPRIVMSG(std::string message, Client *client, Channel *channel)
+void Command::channelPRIVMSG(std::string message, Client &client, Channel *channel)
 {
 	std::vector<int> fdList = channel->getClientFdList();
 	std::vector<int>::iterator fd_iter = fdList.begin();
 	for (; fd_iter != fdList.end(); fd_iter++)
 	{
-		if (*fd_iter != client->getClientFd())
+		if (*fd_iter != client.getClientFd())
 		{
-			Client *target = _server.getClients().find(*fd_iter)->second;
-			target->appendClientRecvBuf(":" + client->getNickname() + " PRIVMSG " + channel->getChannelName() + " :" + message + "\r\n");
+			Client& target = _server.getClients().find(*fd_iter)->second;
+			target.appendClientRecvBuf(":" + client.getNickname() + " PRIVMSG " + channel->getChannelName() + " :" + message + "\r\n");
 		}
 	}
 }
 
 void Command::channelPART(int fd, std::string channelName, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.getClients();
-	std::map<int, Client *>::iterator client_iter = clients.find(fd);
+	std::map<int, Client>& clients = _server.getClients();
+	std::map<int, Client>::iterator client_iter = clients.find(fd);
 	Channel *channel = _server.findChannel(channelName);
 	std::vector<int> fdList = channel->getClientFdList();
 	std::vector<int>::iterator fd_iter = fdList.begin();
@@ -63,8 +63,8 @@ void Command::channelPART(int fd, std::string channelName, std::vector<std::stri
 	{
 		if (*fd_iter != fd)
 		{
-			Client *target = _server.getClients().find(*fd_iter)->second;
-			target->appendClientRecvBuf(":" + target->getNickname() + "!" + target->getUsername() + "@" + target->getServername() + client_iter->second->getNickname() + " PART " + channel->getChannelName() + " " + message + "\r\n");
+			Client &target = _server.getClients().find(*fd_iter)->second;
+			target.appendClientRecvBuf(":" + target.getNickname() + "!" + target.getUsername() + "@" + target.getServername() + client_iter->second.getNickname() + " PART " + channel->getChannelName() + " " + message + "\r\n");
 		}
 	}
 }
@@ -72,7 +72,7 @@ void Command::channelPART(int fd, std::string channelName, std::vector<std::stri
 
 void Command::msgToAllChannel(int target, std::string channelName, std::string command, std::string msg)
 {
-	std::map<std::string, Channel *> channelList = _server.getChannelList();
+	std::map<std::string, Channel *>& channelList = _server.getChannelList();
 	if (channelList.find(channelName) == channelList.end())
 	{
 		// ERR_NOSUCHCHANNEL
@@ -83,50 +83,47 @@ void Command::msgToAllChannel(int target, std::string channelName, std::string c
 	std::vector<int>::iterator iter = clientFdList.begin();
 	while (iter != clientFdList.end())
 	{
-		Client *client = _server.getClients().find(*iter)->second;
+		Client &client = _server.getClients().find(*iter)->second;
 		if (command == "PRIVMSG" && target == *iter)
 		{
 			iter++;
 			continue ;
 		}
-		client->appendClientRecvBuf(makeFullName(target) + " " + command + " " + channelName + " " + msg + "\r\n");
+		client.appendClientRecvBuf(makeFullName(target) + " " + command + " " + channelName + " " + msg + "\r\n");
 		iter++;
 	}
 }
 
 std::string Command::makeFullName(int fd)
 {
-	std::map<int, Client *> clients = _server.getClients();
-	std::map<int, Client *>::iterator clientIt = clients.find(fd);
-	Client *client = clientIt->second;
-	std::string temp = (":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getServername());
+	std::map<int, Client>& clients = _server.getClients();
+	std::map<int, Client>::iterator clientIt = clients.find(fd);
+	Client &client = clientIt->second;
+	std::string temp = (":" + client.getNickname() + "!" + client.getUsername() + "@" + client.getServername());
 	return temp;
 }
 
 
 void Command::nameListMsg(int fd, std::string channelName)
 {
-	std::map<std::string, Channel *> channelList = _server.getChannelList();
+	std::map<std::string, Channel *>& channelList = _server.getChannelList();
 	if (channelList.find(channelName) == channelList.end())
-	{
-		// ERR_NOSUCHCHANNEL
 		return;
-	}
 	Channel *channel = channelList.find(channelName)->second;
 	std::vector<int> clientFdList = channel->getClientFdList();
 	std::vector<int>::iterator iter = clientFdList.begin();
 	std::string message;
 	while (iter != clientFdList.end())
 	{
-		Client *client = _server.getClients().find(*iter)->second;
-		if (channel->checkOperator(client->getClientFd()))
+		Client &client = _server.getClients().find(*iter)->second;
+		if (channel->checkOperator(client.getClientFd()))
 			message += "@";
-		message += client->getNickname();
+		message += client.getNickname();
 		if (iter != clientFdList.end() - 1)
 			message += " ";
 		iter++;
 	}
-	Client *client = _server.getClients().find(fd)->second;
-	client->appendClientRecvBuf("353 " + client->getNickname() + " = " + channelName + " :" + message + "\r\n");
-	client->appendClientRecvBuf("366 " + client->getNickname() + " " + channelName + " :End of NAMES list.\r\n");
+	Client &client = _server.getClients().find(fd)->second;
+	client.appendClientRecvBuf("353 " + client.getNickname() + " = " + channelName + " :" + message + "\r\n");
+	client.appendClientRecvBuf("366 " + client.getNickname() + " " + channelName + " :End of NAMES list.\r\n");
 }

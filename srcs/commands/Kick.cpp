@@ -3,8 +3,8 @@
 
 void Command::kick(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.getClients();
-	std::map<int, Client *>::iterator client_iter = clients.find(fd);
+	std::map<int, Client>& clients = _server.getClients();
+	std::map<int, Client>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 3)
 	{
 		err_needmoreparams_461(client_iter->second);
@@ -31,24 +31,24 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 		}
 		else
 		{
-			Client *target = _server.findClient(command_vec[2]);
-			if (target == NULL)
+			std::map<int, Client>::iterator target = _server.findClient(command_vec[2]);
+			if (target == _server.getClients().end())
 			{
 				err_nosuchnick_401(client_iter->second, command_vec[2]);
 				return;
 			}
-			if (target->getClientFd() == -1)
+			if (target->second.getClientFd() == -1)
 			{
 				err_nosuchnick_401(client_iter->second, command_vec[2]);
 				return;
 			}
-			if (target->getNickname() == client_iter->second->getNickname())
+			if (target->second.getNickname() == client_iter->second.getNickname())
 			{
 				return;
 			}
 			else
 			{
-				if (!channel->checkClientInChannel(target->getClientFd()))
+				if (!channel->checkClientInChannel(target->second.getClientFd()))
 				{
 					err_usernotinchannel_441(client_iter->second, command_vec[2], *vec_iter);
 				}
@@ -58,8 +58,8 @@ void Command::kick(int fd, std::vector<std::string> command_vec)
 					if (command_vec.size() > 3)
 						message += " " + command_vec[3];
 					msgToAllChannel(fd, *vec_iter, "KICK", message);
-					channel->removeClientFdList(target->getClientFd());
-					target->removeChannel(*vec_iter);
+					channel->removeClientFdList(target->second.getClientFd());
+					target->second.removeChannel(*vec_iter);
 				}
 			}
 		}

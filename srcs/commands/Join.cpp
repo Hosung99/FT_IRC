@@ -17,8 +17,8 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		joinKey = split(command_vec[2], ',');
 		keyIter = joinKey.begin();
 	}
-	std::map<int, Client *> clients = _server.getClients();
-	Client *client = clients.find(fd)->second;
+	std::map<int, Client>& clients = _server.getClients();
+	Client &client = clients.find(fd)->second;
 	while (iter != joinChannel.end())
 	{
 		if ((*iter)[0] != '#' && (*iter)[0] != '&')
@@ -29,7 +29,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 				keyIter++;
 			continue;
 		}
-		std::map<std::string, Channel *> &channelList = _server.getChannelList();
+		std::map<std::string, Channel *>& channelList = _server.getChannelList();
 		std::map<std::string, Channel *>::iterator channelIt = channelList.find(*iter);
 		if (channelIt != channelList.end()) // 채널이 있다면
 		{
@@ -77,7 +77,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			}
 			std::string channelName = (*channelIt).second->getChannelName();
 			(*channelIt).second->appendClientFdList(fd);
-			client->appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
+			client.appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
 			msgToAllChannel(fd, channelName, "JOIN", ""); // 채널에 JOIN 메시지를 보내준다.
 			topicMsg(fd, channelName);
 		}
@@ -86,7 +86,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			_server.appendNewChannel(*iter, fd);				// 서버에 채널을 추가 해준다.
 			_server.findChannel(*iter)->appendClientFdList(-1);
 			_server.findChannel(*iter)->appendClientFdList(fd); // 해당 클라이언트를 채널에 넣어준다.
-			client->appendChannelList(*iter);
+			client.appendChannelList(*iter);
 			msgToAllChannel(fd, *iter, "JOIN", "");
 			_server.findChannel(*iter)->addOperatorFd(fd);
 		}
@@ -100,7 +100,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 
 void Command::topicMsg(int fd, std::string channelName)
 {
-	std::map<std::string, Channel *> channelList = _server.getChannelList();
+	std::map<std::string, Channel *>& channelList = _server.getChannelList();
 	Channel *channel = channelList.find(channelName)->second;
 	std::string topic = channel->getTopic();
 	if (topic.length() == 0)
@@ -108,6 +108,6 @@ void Command::topicMsg(int fd, std::string channelName)
 		return;
 	}
 	topic = topic.substr(1, topic.length() - 1);
-	Client *client = _server.getClients().find(fd)->second;
-	client->appendClientRecvBuf("332 " + client->getNickname() + " " + channelName + " :" + topic + "\r\n");
+	Client &client = _server.getClients().find(fd)->second;
+	client.appendClientRecvBuf("332 " + client.getNickname() + " " + channelName + " :" + topic + "\r\n");
 }
