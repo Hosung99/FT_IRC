@@ -39,11 +39,11 @@ Server::Server(char *portNum, char *password)
 Server::~Server()
 {
 	close(_serverSock);
-	std::map<int, Client *>::iterator iter = _clients.begin();
+	std::map<int, Client>::iterator iter = _clients.begin();
 	for (; iter != _clients.end(); iter++)
 	{
 		close(iter->first);
-		delete iter->second;
+		// delete iter->second;
 	}
 	std::map<std::string, Channel *>::iterator iter2 = _channelList.begin();
 	for (; iter2 != _channelList.end(); iter2++)
@@ -60,7 +60,7 @@ void Server::setBot()
 {
 	_bot = new Client(-1);
 	_bot->makeClientToBot();
-	_clients.insert(std::make_pair(-1, _bot));
+	_clients.insert(std::make_pair(-1, *_bot));
 }
 
 void Server::run()
@@ -89,7 +89,7 @@ void Server::setServerAddr()
 {
 	memset(&this->_serverAddr, 0, sizeof(_serverAddr));
 	_serverAddr.sin_family = AF_INET;
-	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_addr.s_addr = inet_addr("10.18.233.214");
 	_serverAddr.sin_port = htons(this->_portNum);
 }
 
@@ -110,7 +110,7 @@ int Server::getServerSock()
 	return (this->_serverSock);
 }
 
-std::map<int, Client *>& Server::getClients()
+std::map<int, Client>& Server::getClients()
 {
 	return (this->_clients);
 }
@@ -125,7 +125,7 @@ std::string Server::getMessage(int fd)
 	return (this->_message[fd]);
 }
 
-std::map<std::string, Channel *> &Server::getChannelList()
+std::map<std::string, Channel *>& Server::getChannelList()
 {
 	return (this->_channelList);
 }
@@ -166,7 +166,7 @@ void Server::doCommand(int fd)
 
 void Server::addClient(int fd)
 {
-	_clients.insert(std::make_pair(fd, new Client(fd)));
+	_clients.insert(std::make_pair(fd, Client(fd)));
 }
 
 void Server::execute()
@@ -198,12 +198,12 @@ void Server::execute()
 						if (_strLen <= 0)
 						{
 							std::cout << "fd " << _fds[i].fd << " is quit connect" << std::endl;
-							std::map<int, Client*>::iterator client = _clients.find(_fds[i].fd);
+							std::map<int, Client>::iterator client = _clients.find(_fds[i].fd);
 							if (client != _clients.end())
 							{
-								client->second->clearClient();
-								delete client->second;
-								client->second = NULL;
+								client->second.clearClient();
+								// delete client->second;
+								// client->second = NULL;
 								_clients.erase(_fds[i].fd);
 								close(_fds[i].fd);
 							}
@@ -220,13 +220,14 @@ void Server::execute()
 					}
 				}
 			}
-			std::map<int, Client *>::iterator iter = _clients.begin();
+			std::map<int, Client>::iterator iter = _clients.begin();
 			for (; iter != _clients.end(); iter++)
 			{
-				if (iter->second && iter->second->getClientRecvBuf().length() > 0)
+				//iter->second &&
+				if (iter->second.getClientRecvBuf().length() > 0)
 				{
-					send(iter->first, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
-					iter->second->clearClientRecvBuf();
+					send(iter->first, iter->second.getClientRecvBuf().c_str(), iter->second.getClientRecvBuf().length(), 0);
+					iter->second.clearClientRecvBuf();
 				}
 			}
 		}
@@ -245,15 +246,15 @@ Channel *Server::findChannel(std::string channel_name)
 	return (iter->second);
 }
 
-Client *Server::findClient(std::string nickname)
+std::map<int, Client>::iterator Server::findClient(std::string nickname)
 {
-	std::map<int, Client *>::iterator iter = _clients.begin();
+	std::map<int, Client>::iterator iter = _clients.begin();
 	for (; iter != _clients.end(); iter++)
 	{
-		if (iter->second->getNickname() == nickname)
-			return (iter->second);
+		if (iter->second.getNickname() == nickname)
+			return (iter);
 	}
-	return (NULL);
+	return (iter);
 }
 
 void	Server::removeChannel(std::string channel_name)

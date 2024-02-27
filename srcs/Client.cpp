@@ -106,7 +106,7 @@ bool Client::getIsRegist()
 	return (_isRegistPass && _isRegistNick && _isRegistUser);
 }
 
-std::vector<std::string> &Client::getChannelList()
+std::vector<std::string>& Client::getChannelList()
 {
 	return (this->_channelList);
 }

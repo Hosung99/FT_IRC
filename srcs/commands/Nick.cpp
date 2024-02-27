@@ -3,13 +3,13 @@
 
 void Command::nick(int fd, std::vector<std::string> command_vec)
 {
-	std::map<int, Client *> clients = _server.getClients();
-	std::map<int, Client *>::iterator iter = clients.find(fd);
-	if (!iter->second->getPassRegist())
+	std::map<int, Client>& clients = _server.getClients();
+	std::map<int, Client>::iterator iter = clients.find(fd);
+	if (!iter->second.getPassRegist())
 	{
 		err_notregistered_451(iter->second);
-		send(fd, iter->second->getClientRecvBuf().c_str(), iter->second->getClientRecvBuf().length(), 0);
-		iter->second->clearClient();
+		send(fd, iter->second.getClientRecvBuf().c_str(), iter->second.getClientRecvBuf().length(), 0);
+		iter->second.clearClient();
 		clients.erase(fd);
 		close(fd);
 		return;
@@ -23,9 +23,9 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	{
 		while(1)
 		{
-			Client *client = _server.findClient(command_vec[1]);
-			if (client != NULL)
-				command_vec[1] = client->getNickname() + "_";
+			std::map<int, Client>::iterator client = _server.findClient(command_vec[1]);
+			if (client != _server.getClients().end())
+				command_vec[1] = client->second.getNickname() + "_";
 			else
 				break ;
 		}
@@ -33,7 +33,7 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 	if (!checkNicknameValidate(command_vec[1]))
 	{
 		err_erroneusnickname_432(iter->second);
-		iter->second->appendClientRecvBuf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
+		iter->second.appendClientRecvBuf("/NICK <nickname> First Letter is not digit and length is under 10.\r\n");
 		return;
 	}
 	if (!checkNicknameDuplicate(command_vec[1], _server.getClients()))
@@ -41,10 +41,10 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		err_nicknameinuse_433(iter->second);
 		return;
 	}
-	std::string old_nickname = iter->second->getNickname();
+	std::string old_nickname = iter->second.getNickname();
 	if (old_nickname == "Client")
-		old_nickname = iter->second->getNickname();
-	std::vector<std::string> channelList = iter->second->getChannelList();
+		old_nickname = iter->second.getNickname();
+	std::vector<std::string> channelList = iter->second.getChannelList();
 	std::vector<std::string>::iterator channel_iter = channelList.begin();
 	for (; channel_iter != channelList.end(); channel_iter++)
 	{
@@ -52,9 +52,9 @@ void Command::nick(int fd, std::vector<std::string> command_vec)
 		if (channel)
 			msgToAllChannel(fd, channel->getChannelName(), "NICK", old_nickname + " " + command_vec[1]);
 	}
-	iter->second->setNickname(command_vec[1]);
-	iter->second->appendClientRecvBuf(":" + old_nickname + " NICK " + iter->second->getNickname() + "\r\n");
-	iter->second->setNickRegist(true);
+	iter->second.setNickname(command_vec[1]);
+	iter->second.appendClientRecvBuf(":" + old_nickname + " NICK " + iter->second.getNickname() + "\r\n");
+	iter->second.setNickRegist(true);
 }
 
 
@@ -72,12 +72,12 @@ bool Command::checkNicknameValidate(std::string nickname)
 	return (true);
 }
 
-bool Command::checkNicknameDuplicate(std::string nickname, std::map<int, Client *> Clients)
+bool Command::checkNicknameDuplicate(std::string nickname, std::map<int, Client>& Clients)
 {
-	std::map<int, Client *>::iterator iter = Clients.begin();
+	std::map<int, Client>::iterator iter = Clients.begin();
 	for (; iter != Clients.end(); iter++)
 	{
-		std::string clientNickname = iter->second->getNickname();
+		std::string clientNickname = iter->second.getNickname();
 		bool isSame = true;
 		if (clientNickname.length() != nickname.length())
 			continue;
