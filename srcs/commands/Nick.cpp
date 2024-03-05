@@ -3,9 +3,10 @@
 
 void Command::nick(int fd, std::vector<std::string> command_vec)
 {
+	/* NICK <nickname> */
 	std::map<int, Client>& clients = _server.getClients();
 	std::map<int, Client>::iterator iter = clients.find(fd);
-	if (!iter->second.getPassRegist())
+	if (!iter->second.getPassRegist())		// if pass-authentication == false
 	{
 		err_notregistered_451(iter->second);
 		send(fd, iter->second.getClientRecvBuf().c_str(), iter->second.getClientRecvBuf().length(), 0);

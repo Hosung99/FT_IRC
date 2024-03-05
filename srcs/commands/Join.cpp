@@ -3,6 +3,7 @@
 
 void Command::join(int fd, std::vector<std::string> command_vec)
 {
+	/* JOIN <channel> (<options>) */
 	if (command_vec.size() < 2)
 	{
 		err_needmoreparams_461(_server.getClients().find(fd)->second);
@@ -31,18 +32,18 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 		}
 		std::map<std::string, Channel *>& channelList = _server.getChannelList();
 		std::map<std::string, Channel *>::iterator channelIt = channelList.find(*iter);
-		if (channelIt != channelList.end()) // 채널이 있다면
+		if (channelIt != channelList.end())	// channel exists
 		{
-			// 해당 클라이언트를 채널에 넣어준다.
+			/* conditions: if clients can join to channel */
 			Channel *channel = channelIt->second;
-			if (channel->checkClientInChannel(fd))
+			if (channel->checkClientInChannel(fd))	// aready in channel
 			{
 				iter++;
 				if (command_vec.size() > 2 || keyIter != joinKey.end())
 					keyIter++;
 				continue;
 			}
-			if (channel->checkMode(INVITE)) // INVITE 모드가 켜져있다면
+			if (channel->checkMode(INVITE))	// if MODE(invite) == true
 			{
 				if (!channel->checkInvite(fd))
 				{
@@ -53,9 +54,9 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 					continue;
 				}
 			}
-			if (channel->checkMode(KEY)) // KEY 모드가 켜져있다면
+			if (channel->checkMode(KEY))	// if MODE(key) == true
 			{
-				if (command_vec.size() <= 2 || keyIter == joinKey.end() || !channel->checkKey(*keyIter)) // 인자에 키가 없거나 키가 틀리다면
+				if (command_vec.size() <= 2 || keyIter == joinKey.end() || !channel->checkKey(*keyIter))	// if invalid key
 				{
 					err_badchannelkey_475(client, *iter);
 					iter++;
@@ -64,7 +65,7 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 					continue;
 				}
 			}
-			if (channel->checkMode(LIMIT)) // LIMIT 모드가 켜져있다면
+			if (channel->checkMode(LIMIT))	// if MODE(limit) == true
 			{
 				if (channel->getClientFdList().size() >= channel->getLimit())
 				{
@@ -77,15 +78,15 @@ void Command::join(int fd, std::vector<std::string> command_vec)
 			}
 			std::string channelName = (*channelIt).second->getChannelName();
 			(*channelIt).second->appendClientFdList(fd);
-			client.appendChannelList(channelName);		  // 클라이언트에 채널을 추가 해준다.
-			msgToAllChannel(fd, channelName, "JOIN", ""); // 채널에 JOIN 메시지를 보내준다.
+			client.appendChannelList(channelName);			// join clients to channel
+			msgToAllChannel(fd, channelName, "JOIN", "");	// send join-message to clients(in channel)
 			topicMsg(fd, channelName);
 		}
-		else // 채널이 없다면
+		else	// channel not exists (new channel)
 		{
-			_server.appendNewChannel(*iter, fd);				// 서버에 채널을 추가 해준다.
+			_server.appendNewChannel(*iter, fd);				// create new channel
 			_server.findChannel(*iter)->appendClientFdList(-1);
-			_server.findChannel(*iter)->appendClientFdList(fd); // 해당 클라이언트를 채널에 넣어준다.
+			_server.findChannel(*iter)->appendClientFdList(fd);	// join clients to channel
 			client.appendChannelList(*iter);
 			msgToAllChannel(fd, *iter, "JOIN", "");
 			_server.findChannel(*iter)->addOperatorFd(fd);

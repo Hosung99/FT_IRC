@@ -3,6 +3,7 @@
 
 void Command::part(int fd, std::vector<std::string> command_vec)
 {
+	/* PART <channel> <nickname> (<reasons, ...>) */
 	std::map<int, Client>& clients = _server.getClients();
 	std::map<int, Client>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 2)
@@ -26,13 +27,13 @@ void Command::part(int fd, std::vector<std::string> command_vec)
 			channel->removeClientFdList(fd);
 			channel->removeOperatorFd(fd);
 			client_iter->second.removeChannel(*channelList);
-			if (channel->getClientFdList().size() == 1)
+			if (channel->getClientFdList().size() == 1)		// if last-client in channel: remove channel
 			{
 				_server.removeChannel(channel->getChannelName());
 				delete channel;
 			}
 		}
-		else
+		else	// error
 		{
 			if (_server.findChannel(*vec_iter))
 			{

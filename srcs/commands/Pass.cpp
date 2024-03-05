@@ -4,6 +4,7 @@
 
 void Command::pass(int fd, std::vector<std::string> command_vec)
 {
+	/* PASS <password> */
 	std::map<int, Client>& clients = _server.getClients();
 	std::map<int, Client>::iterator iter = clients.find(fd);
 	std::string password = _server.getPassword();

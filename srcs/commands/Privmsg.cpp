@@ -3,6 +3,7 @@
 
 void Command::privmsg(int fd, std::vector<std::string> command_vec)
 {
+	/* PRIVMSG(or /msg) <channel/nickname> <messages ...> */
 	std::map<int, Client>& clients = _server.getClients();
 	std::map<int, Client>::iterator client_iter = clients.find(fd);
 	if (command_vec.size() < 2)
@@ -18,10 +19,10 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 	std::vector<std::string>::iterator vec_iter = vec.begin();
 	for (; vec_iter != vec.end(); vec_iter++)
 	{
-		if ((*vec_iter)[0] == '#' || (*vec_iter)[0] == '&') // 채널에 메시지를 보낸다
+		if ((*vec_iter)[0] == '#' || (*vec_iter)[0] == '&')	// send to channel
 		{
 			Channel *channel = _server.findChannel(*vec_iter);
-			if (channel) // 해당 채널을 찾음
+			if (channel)	// if channel exists
 			{
 				if (command_vec.size() > 2 && checkBotCommand(command_vec[2]))
 				{
@@ -31,7 +32,7 @@ void Command::privmsg(int fd, std::vector<std::string> command_vec)
 				std::string message = channelMessage(2, command_vec);
 				channelPRIVMSG(message, client_iter->second, channel);
 			}
-			else
+			else	// if channel not exists
 			{
 				err_nosuchchannel_403(client_iter->second, *vec_iter);
 			}

@@ -3,7 +3,7 @@
 
 void Command::invite(int fd, std::vector<std::string> command_vec)
 {
-	// INVITE <nickname> <channel>
+	/* INVITE <nickname> <channel> */
 	Client &client = _server.getClients().find(fd)->second;
 	if (command_vec.size() < 3)
 	{

@@ -1,9 +1,14 @@
 #include "../includes/Command.hpp"
 #include "../includes/Util.hpp"
 
+/* constructor */
 Command::Command(Server &server) : _server(server) {}
+
+/* destructor */
 Command::~Command() {}
 
+
+/* verify commands */
 void Command::run(int fd)
 {
 	std::istringstream iss(_server.getMessage(fd));
@@ -17,7 +22,7 @@ void Command::run(int fd)
 		std::size_t endPos = buffer.find_last_not_of("\r\n");
 		command_vec.push_back(buffer.substr(0, endPos + 1));
 	}
-	if (iter != clients.end() && !iter->second.getIsRegist())
+	if (iter != clients.end() && !iter->second.getIsRegist())	// clients authentication
 	{
 		if (command_vec[0] == "PASS")
 		{
