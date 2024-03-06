@@ -3,6 +3,7 @@
 
 void Command::quit(int fd, std::vector<std::string> command_vec)
 {
+	/* QUIT */
 	std::map<int, Client>& clients = _server.getClients();
 	std::map<int, Client>::iterator client_iter = clients.find(fd);
 	std::vector<std::string> channelList = client_iter->second.getChannelList();

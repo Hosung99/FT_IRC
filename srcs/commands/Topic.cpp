@@ -3,6 +3,7 @@
 
 void Command::topic(int fd, std::vector<std::string> command_vec)
 {
+	/* TOPIC <channel> <topic-message> */
 	if (command_vec.size() < 2)
 	{
 		err_needmoreparams_461(_server.getClients().find(fd)->second);

@@ -1,60 +1,67 @@
 #ifndef CLIENT_HPP
-#define CLIENT_HPP
+# define CLIENT_HPP
 
-#include "Server.hpp"
+# include "./Server.hpp"
 
 class Client
 {
-private:
-	/* OCCF*/
-
-	/* member variables */
-	std::string _nickName;
-	std::string _userName;
-	std::string _hostName;
-	std::string _serverName;
-	std::string _realName;
-
-	std::string _clientRecvBuf; // client가 받은 데이터
-	std::vector<std::string> _channelList;
-	int _clientFd;
-	bool _isRegistPass;
-	bool _isRegistNick;
-	bool _isRegistUser;
-
 public:
 	/* OCCF */
-	Client(int clientfd);
+	Client(int);
 	~Client();
 
 	/* member functions */
-	void setNickname(std::string);
-	void setUser(std::string username, std::string hostname, std::string servername, std::string realname);
-	std::string getNickname();
-	std::string getUsername();
-	std::string getHostname();
-	std::string getServername();
-	std::string getRealname();
-	void appendClientRecvBuf(std::string);
-	void clearClientRecvBuf();
-	std::string getClientRecvBuf();
-	bool getIsRegist();
-	bool getPassRegist();
-	bool getNickRegist();
-	bool getUserRegist();
-	void setPassRegist(bool);
-	void setNickRegist(bool);
-	void setUserRegist(bool);
-	void setRegist(bool);
-	int getClientFd();
+	// getters
+	std::string							getNickname();
+	std::string							getUsername();
+	std::string							getHostname();
+	std::string							getServername();
+	std::string							getRealname();
+	bool								getIsRegist();
+	bool								getPassRegist();
+	bool								getNickRegist();
+	bool								getUserRegist();
+	int									getClientFd();
+	std::string							getClientRecvBuf();
+	std::vector<std::string>			&getChannelList();
+	// setters
+	void								setNickname(std::string);
+	void								setUser(std::string, std::string, std::string, std::string);
+	void								setPassRegist(bool);
+	void								setNickRegist(bool);
+	void								setUserRegist(bool);
+	void								setRegist(bool);
+	// append
+	void								appendClientRecvBuf(std::string);
+	void								appendChannelList(std::string);
+	// clear
+	void								clearClientRecvBuf();
+	void								clearChannelList();
+	void								clearClient();
+	// others
+	void								makeClientToBot();
+	void								removeChannel(std::string);
+	std::vector<std::string>::iterator	findChannel(std::string);
 
-	std::vector<std::string> &getChannelList();
-	void appendChannelList(std::string channelName);
-	void removeChannel(std::string channelName);
-	void clearChannelList();
-	std::vector<std::string>::iterator findChannel(std::string channelName);
-	void makeClientToBot();
-	void clearClient();
+private:
+	/* OCCF*/
+	Client &operator=(const Client&);
+
+	/* member variables */
+	// client informations
+	std::string							_nickName;
+	std::string							_userName;
+	std::string							_hostName;
+	std::string							_serverName;
+	std::string							_realName;
+	// regist flags
+	bool								_isRegistPass;
+	bool								_isRegistNick;
+	bool								_isRegistUser;
+	// others
+	std::string							_clientRecvBuf;
+	std::vector<std::string>			_channelList;
+	int									_clientFd;
 };
 
 #endif

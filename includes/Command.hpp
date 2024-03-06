@@ -1,11 +1,11 @@
 #ifndef COMMAND_HPP
-#define COMMAND_HPP
+# define COMMAND_HPP
 
-#include "../main.hpp"
-#include "Client.hpp"
-#include "Channel.hpp"
-#include "Server.hpp"
-#include "Error.hpp"
+# include "../main.hpp"
+# include "./Client.hpp"
+# include "./Channel.hpp"
+# include "./Server.hpp"
+# include "./Error.hpp"
 
 class Client;
 class Server;
@@ -13,46 +13,49 @@ class Channel;
 
 class Command
 {
-private:
-	/* OCCF */
-	Command &operator=(const Command &);
-	Command(const Command &);
-
-	/* member variables */
-	Server &_server;
-
 public:
 	/* OCCF */
 	Command(Server &server);
 	~Command();
 
 	/* member functions */
-	void run(int);
-	void pass(int fd, std::vector<std::string> command_vec);
-	void nick(int fd, std::vector<std::string> command_vec);
-	void user(int fd, std::vector<std::string> command_vec);
-	void ping(int fd, std::vector<std::string> command_vec);
-	void privmsg(int fd, std::vector<std::string> command_vec);
-	void quit(int fd, std::vector<std::string> command_vec);
-	void part(int fd, std::vector<std::string> command_vec);
-	void join(int fd, std::vector<std::string> command_vec);
-	void kick(int fd, std::vector<std::string> command_vec);
-	void mode(int fd, std::vector<std::string> command_vec);
-	void topic(int fd, std::vector<std::string> command_vec);
-	void invite(int fd, std::vector<std::string> command_vec);
+	// verify commands
+	void		run(int);
+	// commands/
+	void		pass(int, std::vector<std::string>);
+	void		nick(int, std::vector<std::string>);
+	void		user(int, std::vector<std::string>);
+	void		ping(int, std::vector<std::string>);
+	void		privmsg(int, std::vector<std::string>);
+	void		quit(int, std::vector<std::string>);
+	void		part(int, std::vector<std::string>);
+	void		join(int, std::vector<std::string>);
+	void		kick(int, std::vector<std::string>);
+	void		mode(int, std::vector<std::string>);
+	void		topic(int, std::vector<std::string>);
+	void		invite(int, std::vector<std::string>);
+	// utils in commands/
+	void		botCommand(int, std::vector<std::string>);
+	void		topicMsg(int, std::string);
+	bool		checkNicknameDuplicate(std::string, std::map<int, Client>&);
+	bool		checkNicknameValidate(std::string);
+	bool		checkRealname(std::string);
+	bool		checkBotCommand(std::string);
+	// utils in Util.cpp
+	std::string	channelMessage(int, std::vector<std::string>);
+	void		channelPRIVMSG(std::string, Client&, Channel*);
+	void		channelPART(int, std::string, std::vector<std::string>);
+	void		msgToAllChannel(int, std::string, std::string, std::string);
+	std::string	makeFullName(int);
+	void		nameListMsg(int, std::string);
 
-	void botCommand(int fd, std::vector<std::string> command_vec);
-	std::string channelMessage(int index, std::vector<std::string> command_vec);
-	void channelPRIVMSG(std::string message, Client &client, Channel *channel);
-	void channelPART(int, std::string channelName, std::vector<std::string> command_vec);
-	void msgToAllChannel(int target, std::string channelName, std::string command, std::string msg);
-	std::string makeFullName(int fd);
-	void nameListMsg(int fd, std::string channelName);
-	void topicMsg(int fd, std::string channelName);
-	bool checkNicknameDuplicate(std::string, std::map<int, Client>&);
-	bool checkNicknameValidate(std::string);
-	bool checkRealname(std::string);
-	bool checkBotCommand(std::string);
+private:
+	/* OCCF */
+	Command &operator=(const Command&);
+	Command(const Command&);
+
+	/* member variables */
+	Server		&_server;
 };
 
 #endif

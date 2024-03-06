@@ -1,5 +1,6 @@
 #include "../includes/Error.hpp"
 
+/* nosuch error */
 void err_nosuchnick_401(Client &client, std::string nickname)
 {
 	client.appendClientRecvBuf("401 " + client.getNickname() + " " + nickname + " :" + ERR_NOSUCHNICK);
@@ -10,14 +11,15 @@ void err_nosuchchannel_403(Client &client, std::string channel)
 	client.appendClientRecvBuf("403 " + client.getNickname() + " " + channel + " :" + ERR_NOSUCHCHANNEL);
 }
 
+/* channel error */
+void err_usernotinchannel_441(Client &client, std::string nickname, std::string channel)
+{
+	client.appendClientRecvBuf("441 " + client.getNickname() + " " + nickname + " " + channel + " :" + ERR_USERNOTINCHANNEL);
+}
+
 void err_notonchannel_442(Client &client, std::string channel)
 {
 	client.appendClientRecvBuf("442 " + client.getNickname() + " " + channel + " :" + ERR_NOTONCHANNEL);
-}
-
-void err_chanoprivsneeded_482(Client &client, std::string channel)
-{
-	client.appendClientRecvBuf("482 " + client.getNickname() + " " + channel + " :" + ERR_CHANOPRIVSNEEDED);
 }
 
 void err_useronchannel_443(Client &client, std::string nickname, std::string channel)
@@ -25,34 +27,7 @@ void err_useronchannel_443(Client &client, std::string nickname, std::string cha
 	client.appendClientRecvBuf("443 " + client.getNickname() + " " + nickname + " " + channel + " :" + ERR_USERONCHANNEL);
 }
 
-void err_usernotinchannel_441(Client &client, std::string nickname, std::string channel)
-{
-	client.appendClientRecvBuf("441 " + client.getNickname() + " " + nickname + " " + channel + " :" + ERR_USERNOTINCHANNEL);
-}
-
-void err_needmoreparams_461(Client &client)
-{
-	client.appendClientRecvBuf("461 :");
-	client.appendClientRecvBuf(ERR_NEEDMOREPARAMS);
-}
-
-void err_alreadyregistred_462(Client &client)
-{
-	client.appendClientRecvBuf("462 :");
-	client.appendClientRecvBuf(ERR_ALREADYREGISTRED);
-}
-
-void err_passwdmismatch_464(Client &client)
-{
-	client.appendClientRecvBuf("464 :");
-	client.appendClientRecvBuf(ERR_PASSWDMISMATCH);
-}
-
-void err_unknownmode_472(Client &client, char mode)
-{
-	client.appendClientRecvBuf("472 " + client.getNickname() + " " + mode + " :" + ERR_UNKNOWNMODE);
-}
-
+/* 43* error */
 void err_nonicknamegiven_431(Client &client)
 {
 	client.appendClientRecvBuf("431 :");
@@ -71,7 +46,39 @@ void err_nicknameinuse_433(Client &client)
 	client.appendClientRecvBuf(ERR_NICKNAMEINUSE);
 }
 
-void err_unknownmode_472(Client &client, std::string mode)
+/* 45* error */
+void err_notregistered_451(Client &client)
+{
+	client.appendClientRecvBuf("451 :");
+	client.appendClientRecvBuf(ERR_NOTREGISTERED);
+}
+
+/* 46* error */
+void err_needmoreparams_461(Client &client)
+{
+	client.appendClientRecvBuf("461 :");
+	client.appendClientRecvBuf(ERR_NEEDMOREPARAMS);
+}
+
+void err_alreadyregistred_462(Client &client)
+{
+	client.appendClientRecvBuf("462 :");
+	client.appendClientRecvBuf(ERR_ALREADYREGISTRED);
+}
+
+void err_passwdmismatch_464(Client &client)
+{
+	client.appendClientRecvBuf("464 :");
+	client.appendClientRecvBuf(ERR_PASSWDMISMATCH);
+}
+
+/* mode 47* error */
+void err_channelisfull_471(Client &client, std::string channel)
+{
+	client.appendClientRecvBuf("471 " + client.getNickname() + " " + channel + " :" + ERR_CHANNELISFULL);
+}
+
+void err_unknownmode_472(Client &client, char mode)
 {
 	client.appendClientRecvBuf("472 " + client.getNickname() + " " + mode + " :" + ERR_UNKNOWNMODE);
 }
@@ -86,13 +93,8 @@ void err_badchannelkey_475(Client &client, std::string channel)
 	client.appendClientRecvBuf("475 " + client.getNickname() + " " + channel + " :" + ERR_BADCHANNELKEY);
 }
 
-void err_channelisfull_471(Client &client, std::string channel)
+/* 48* error */
+void err_chanoprivsneeded_482(Client &client, std::string channel)
 {
-	client.appendClientRecvBuf("471 " + client.getNickname() + " " + channel + " :" + ERR_CHANNELISFULL);
-}
-
-void err_notregistered_451(Client &client)
-{
-	client.appendClientRecvBuf("451 :");
-	client.appendClientRecvBuf(ERR_NOTREGISTERED);
+	client.appendClientRecvBuf("482 " + client.getNickname() + " " + channel + " :" + ERR_CHANOPRIVSNEEDED);
 }

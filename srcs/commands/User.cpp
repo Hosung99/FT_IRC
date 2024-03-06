@@ -3,6 +3,7 @@
 
 void Command::user(int fd, std::vector<std::string> command_vec)
 {
+	/* USER <username> <hostname> <servername> <:realname> */
 	std::map<int, Client>& clients = _server.getClients();
 	std::map<int, Client>::iterator iter = clients.find(fd);
 	if (iter->second.getUserRegist())
